@@ -2,8 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>朝ブリーフ 2026/07/11（土）</title>
+<title>🔒 朝ブリーフ</title>
 <style>
   :root{
     --red:#e53935; --redbg:#ffebee; --orange:#fb8c00; --orangebg:#fff3e0;
@@ -71,127 +72,40 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="content"></div>
 
-  <header class="hero">
-    <div class="date">2026年 7月 11日（土）／ Asia/Tokyo</div>
-    <h1>🌅 りゅうちゃん 朝ブリーフ</h1>
-    <div class="quote">
-      「小さいことを積み重ねることが、とんでもないところへ行くただ一つの道だ」
-      <span class="src">— イチロー（鈴木一朗）</span>
-    </div>
-  </header>
-
-  <!-- 期限切れアラート -->
-  <div class="alertbox self">
-    <h2>🔥 りゅうちゃん自身・今すぐ対応！</h2>
-    <ul class="clean">
-      <li class="od"><span class="tag red">Notion</span>あやのさんに自己紹介タスクの報告 ／ 進行中 ／ 期限 6/23 11:00 ／ <span class="over">18日超過</span></li>
-      <li class="od"><span class="tag red">Gmail</span>CFG会（0726）各担当タスク立ち上げ ／ 期限 7/3 23:00 ／ <span class="over">8日超過</span>　<span class="meta">（件名：0726 CFG会）</span></li>
-      <li class="od"><span class="tag red">Gmail</span>国宝鑑賞会（0719）担当タスクの更新 ／ 期限 7/9 23:00 ／ <span class="over">2日超過</span>　<span class="meta">（件名：0719みんなで「国宝」鑑賞会）</span></li>
-      <li class="od"><span class="tag red">Gmail</span>Re:PLAY CAMPUS（0718）チケット購入・参加費送金 ／ 期限 7/10 21:00 ／ <span class="over">約1日超過</span>　<span class="meta">（件名：260718 Re:PLAY CAMPUS）</span></li>
-      <li class="od"><span class="tag red">Gmail</span>Be for the earth 商品予約リマインドメール展開 ／ 期限 7/10 12:00 ／ <span class="over">約1日超過</span>　<span class="meta">（件名：Be for the earth 商品予約スタート）</span></li>
-    </ul>
+<div id="lockgate" style="position:fixed;inset:0;z-index:9999;background:#f4f6f8;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="max-width:340px;width:100%;text-align:center;font-family:'Hiragino Kaku Gothic ProN','Yu Gothic','Meiryo',sans-serif;">
+    <div style="font-size:20px;font-weight:800;margin-bottom:6px;">🔒 朝ブリーフ</div>
+    <div style="font-size:13px;color:#6b6b6b;margin-bottom:16px;">パスフレーズを入力してください</div>
+    <input id="lockpass" type="password" autocomplete="off" style="width:100%;padding:11px 12px;font-size:15px;border:1px solid #ccc;border-radius:8px;margin-bottom:10px;" placeholder="パスフレーズ">
+    <button id="lockbtn" style="width:100%;padding:11px 12px;font-size:15px;font-weight:700;border:none;border-radius:8px;background:#5b6df0;color:#fff;cursor:pointer;">開く</button>
+    <div id="lockerr" style="color:#d33;font-size:13px;margin-top:10px;min-height:18px;"></div>
   </div>
-
-  <div class="alertbox member">
-    <h2>⚡ メンバータスク切れ・声かけ必要！</h2>
-    <ul class="clean">
-      <li class="tod">CFG会（0726）各担当タスク立ち上げ ／ シェフ富徳・のぞみーる・ノスタ・ラブリー ／ 期限 7/3 ／ <span class="over">8日超過</span></li>
-      <li class="tod">Re:PLAY CAMPUS ／ シェフ富徳・のんちゃん・のぞみーる・ノスタ・ラブリー ／ 期限 7/10 21:00 ／ <span class="over">約1日超過</span></li>
-      <li class="tod">国宝鑑賞会 ／ のぞみーる・ノスタ ／ 期限 7/9 ／ <span class="over">2日超過</span></li>
-    </ul>
-    <div class="meta" style="margin-top:6px;">※りゅうちゃんはフォロー・声かけ担当。上記メンバーへリマインドを。</div>
-  </div>
-
-  <!-- 会う日リマインド -->
-  <div class="card">
-    <h2>🔔 コミュニティリスト・会う日リマインド</h2>
-    <table>
-      <thead><tr><th>タイミング</th><th>名前</th><th>次会う日</th><th>次会う日にすること</th></tr></thead>
-      <tbody>
-        <tr><td>🔔 当日</td><td>ごう</td><td>7/11</td><td>楽SAKE</td></tr>
-        <tr><td>🔔 当日</td><td>鈴木康一郎</td><td>7/11</td><td>楽SAKE</td></tr>
-        <tr><td>🔔 当日</td><td>元木啓二郎</td><td>7/11</td><td>楽SAKE</td></tr>
-        <tr><td>🔔 当日</td><td>湯浅ひろき（わいちゃん）</td><td>7/11</td><td>楽SAKE</td></tr>
-        <tr><td>🔔 1日前</td><td>ちひろ（ちーちゃん）</td><td>7/12</td><td>フットサル</td></tr>
-      </tbody>
-    </table>
-    <div class="meta" style="margin-top:8px;">3日前（7/14）・7日前（7/18）の該当者はなし。</div>
-  </div>
-
-  <!-- 今日のToDo -->
-  <div class="card">
-    <h2>✅ 今日のToDo（優先度順）</h2>
-    <table>
-      <thead><tr><th>優先度</th><th>タスク</th><th>出典</th><th>アクション</th></tr></thead>
-      <tbody>
-        <tr><td class="pri"><span class="badge b-red">🔴 最優先</span></td><td>集金☆7月アントレセミナー代（本日20:00締切）</td><td>Gmail</td><td>クラス集計を記入して返信・振込確認</td></tr>
-        <tr><td class="pri"><span class="badge b-red">🔴 最優先</span></td><td>あやのさんへ自己紹介タスクの報告（18日超過）</td><td>Notion</td><td>今日中に報告して完了へ</td></tr>
-        <tr><td class="pri"><span class="badge b-red">🔴 最優先</span></td><td>CFG会・国宝・リプキャンの継続タスク回収</td><td>Gmail</td><td>担当タスク更新＋メンバーへ声かけ</td></tr>
-        <tr><td class="pri"><span class="badge b-yellow">🟡 重要</span></td><td>Be for the earth 予約リマインドメール展開</td><td>Gmail</td><td>はるると連携して各管轄へ展開</td></tr>
-        <tr><td class="pri"><span class="badge b-yellow">🟡 重要</span></td><td>楽SAKEで会う4名との関わり（ごう・鈴木・元木・わいちゃん）</td><td>スプシ</td><td>当日しっかりコミュニケーション</td></tr>
-        <tr><td class="pri"><span class="badge b-green">🟢 余裕あれば</span></td><td>リプキャン自分の参加チケット購入・送金</td><td>Gmail</td><td>Peatix割引コード受領のため先に送金</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- 本日期限 -->
-  <div class="card">
-    <h2>⚠️ 今日中の期限タスク</h2>
-    <ul class="clean">
-      <li class="tod"><span class="tag org">Gmail</span>集金☆2026年7月アントレセミナー代 ／ <b>本日 7/11 20:00 締切</b> ／ 集計記入・返信（振込名「7ガツアントレセミナー あだ名」）</li>
-    </ul>
-    <div class="none">Notionの本日期限タスクはなし。</div>
-  </div>
-
-  <!-- 先回り準備 -->
-  <div class="card">
-    <h2>👀 明日以降の先回り準備</h2>
-    <ul class="clean">
-      <li class="fut"><span class="tag blue">Gmail</span>会場費精算・参加費回収（基礎トレセミナー）／ 期限 7/20 23:00 ／ りゅうちゃん担当</li>
-      <li class="fut"><span class="tag blue">Gmail</span>CFG会 2週間前リマインド（つなこ 7/12）／ お笑いマサ 7/26 ／ デッドライン 7/30</li>
-      <li class="fut"><span class="tag blue">Gmail</span>国宝鑑賞会 お笑いマサ担当 7/12 23:00 ／ デッドライン 7/20</li>
-      <li class="fut"><span class="tag blue">Gmail</span>つなこ 7月分家賃タスク ／ CB分入金 7/23 ／ デッドライン 7/27（つなこ担当・要見守り）</li>
-    </ul>
-  </div>
-
-  <!-- その他ToDo -->
-  <div class="card">
-    <h2>📭 その他ToDo（期限なし）</h2>
-    <div class="none">期限未設定のNotionタスクはなし（未完了はすべて期限付き）。</div>
-  </div>
-
-  <!-- 今日の予定 -->
-  <div class="card">
-    <h2>📅 今日の予定（7/11 土）</h2>
-    <ul class="clean cal">
-      <li><span class="t">11:00–15:00</span>　表彰＆起業セミナー</li>
-      <li><span class="t">15:00–17:00</span>　つくり枠（森のビアガーデン or フットサル）</li>
-      <li><span class="t">17:00–19:00</span>　つくり枠（バーホッピング or ボルダリング）</li>
-      <li><span class="t">18:00–20:00</span>　自主企画</li>
-    </ul>
-    <div class="meta" style="margin-top:10px;"><b>先の予定：</b>7/12(日) WS 11:00／フットサル 19:00｜7/14(火) 紹介・サシ・チームMTG｜7/18(土) 基礎トレ 10:00／モノリス＠品川 15:00</div>
-  </div>
-
-  <!-- 参謀コメント -->
-  <div class="card comment">
-    <h2>💡 参謀コメント</h2>
-    <p>今日は「回収の日」。<b>本日20:00の集金締切</b>と、たまっている継続タスク（CFG会8日超過・国宝・リプキャン・Be for the earth）を午前のうちに片付けるのが最優先です。特に集金は表彰＆起業セミナー中に動員数が固まるので、セミナー後すぐ集計→返信の流れが理想。あやのさんへの自己紹介報告（18日超過）は一言でも今日必ず完了させて、進行中タスクをゼロに。夜は楽SAKEで4名と会う予定なので、昼のうちにタスクを消化して夜は関わりに集中できる状態を作りましょう。メンバー（シェフ富徳・のぞみーる・ノスタ・ラブリー）の継続タスクも同時に声かけを。</p>
-  </div>
-
-  <!-- 情報ソース -->
-  <div class="card">
-    <h2>🔗 情報ソース</h2>
-    <ul class="clean">
-      <li>Googleカレンダー（primary・Asia/Tokyo）</li>
-      <li>Notion ToDo：<a href="https://app.notion.com/p/f3eb91e4980c4aa7b4c1ae1250fe790e">りゅうちゃんTodo</a></li>
-      <li>Gmail 受信トレイ（検索「りゅうちゃん in:inbox」）</li>
-      <li>コミュニティリスト：<a href="https://docs.google.com/spreadsheets/d/1vjDb8_5WTfVffwW2iJGLnL_squUAGLRxhAfY_oveHYw/edit?gid=0#gid=0">C110_ファーストクラスコミュニティリスト</a></li>
-    </ul>
-  </div>
-
-  <footer>自動生成：りゅうちゃん専属チーフアシスタント ／ 2026-07-11</footer>
 </div>
+
+<script>
+const ENC = {"salt":"hVu4fjM39l25roFYwOtxVQ==","iv":"Un2OcwI10zxfbNr5","ct":"Ves2vBabPYOEN/EXFG5/6Kd7Gtnr5l4uZCDgeOPAVX61H9jY9NLTJLHcKACUe1UIlmE11Pgdr0f92I1feHmMDD4o59v2CJ6kj8m9WpfK2Ehim5EZ6k0Hq4tCtoIRUcFvMn4nxMSSy/MNuNcofKI++3KjUdHuD3PbRORiEOTmO/FubBprtl+ynZaSLrcEyfr4NS8G2SDfD0/SaJn6D3PLWKJMQ1dRia7DV5Uzx8RxppiqFz1o9vf16CpKU39RDfCqATrm4BU9BTnr6Gj0iRtLXsIqtUBkHyyVX9bEBmqWY5H3vbAf52nwRSe5uCl7Egd+I+vQGgM7mDiAl3CUdBxz0BMudPLRMEUQw965E7RIUoR5ICH9E6HNgPh39xUpF4Ir5iQGdMc9kUWRNwlhENyHxMk7OjNjuTjB2ytTJFLXy40BoGaRjuMbMODjcmu7Src5Bo04eQ3cI09V1x9gMebOtemIIUJv92QnUnzCFVbyoarjGHqu1t9IV0usCO78zayxz8z2V1bJ0UlQkgt3EYJHtCQ19o7A2VfzM0CRLCzL/nntosmPBbajgtJKZj5DxQ6nW5lvNOJqURJoalz7zO1n+IGYBs1m74Y6nkMHSu839y7ctY43nUBo4xXnGjyUTCABA1D79Rqg0PwaiXQD4HYPGuvjaM9s4MaR+8ftK8QScm5mVkEbt4DstuLeodp3i/R2QX/v8v2bZfnqLWmk0vIWVtrHFIAqZ3+oYaNpSXVWDUx+IIzTKxaBvDXKHdpwWaqQ8rDQYE/nHziwlLoH10O9wEnKz7FVnJYezjv+y71KPN0xbwcpHD9DSmY9Qntwit5TX+1TPqVx5WbnX8t5zz3d2wEDb9lF5sedJMxMVj6fA3c0yb6XzZIqNpLWNTghNjDnDz9JC20omYVQXQMziNS5QZI8OB3rjUzhYVtuJISIaQJ+MErvl7UtZGGT0AMx/lgw0gPHZPMLq5u+n9zIBcIKyM9rRimGR8gp2BMOEj8z09Ub+ymbAJcPfVDmzJNHBnX1TV4eop3jN20wJNrfb478oVJBq3VXtWiAsTLKRpJKlhOpAIJdb6RNyssNvn6ZiZpvMKxTJZHerSs/n56WwITl8LJyvtlJb8SqjG/VxToaNnjTIxXfGlVC25y8D7/WPBzZZDd6nwNI0VYIbwtKDDieKtXNCTYXgmXzxA+Ns7xjhymAn7Et4AqrGZw3/4ZuC1q348JQnouPmGOAfDULnPtCC0YkJoip+eq3zub42KLApXZYID7AQA0OLQZ/eGjzz5HI0LuJMwcSo+ykuLEqLv6LPaQrfIHMGPEXqbas67rr7EQe/pXyqeKHU/bkY7NnY7wpNprUKR44qYblbn+F75bggrD/6tzbW3T6+FdgS5GwliXpr6hU3RUifKF9Yo/8vJZeGgfWJP/iINUxn6q/oGYHr409tdzQGAO5zFdGqLtjEh+NdWvzyriHCvHo5m+T6A/q3rcjledT0iFOSuzhfneFnRtn/mj0BrZI7lZRLeeriEz+mICBKxz/8JfvIytxbZFtjQc/Dno+9TcZWgWPa+xFuC36+YDfJsI1JF58nzMkcDtElgLZKdWKy88koqib/bPDLwChLn3CAZaU9ranf2NXBBez/fVtP5qj7+QPifPGeie0yeBI+I7Z4M/N64OwqC8bjmmBGvM39VEFBPHGjIV6LrGr+jCEG7enVmlT/AuhTMhQsAFuyDWXikXZ/M2MSXgGRBV6IKHEaBI8ZMUiax7y0nyKoCCie6Ov70YFaeDuqjM+FfQkk90J1xWdL2srC9xgE+OrZG2uPAyWPjKQB2lx1freWbf9gSa30vN7eUG5bdaJGdwQp7olNJhzg0bq/V0rfYK+fULZSDsKECQqDBvV9AzriGH6nCQDfKz35k0u1nmJXtOY72q5E7uYHak1tfrQxW1pnXUnaDlpE0NHuru6xOK6jVNCw5YJ3laOhknMKuEzaUjEgENVMpF1ufK1elQ0gB/Y1rPmvuAluNQipujs6EWKATqsejmf17gqDJT9DoVS0s2FDNIQpmzN9in2DFGS95tySVP3kBH99EdE1i86HFQbW4dX6p4Hh1oyFObPUo5jkbIReElNRoP6PXKaJOV+UEsMW/kWRvLI/7n36caHNJgXaDygLvkz1r/nHqHmkrYt7g2pMMtD1XEaOv5/UbQLUVMKd8NEOdzg4o7kcY5+bzU5b99+A01Hm+fdntXh+9BSOWB+ztIaBDhzDBjwU2CpWxYs1oBa7wi6D3L6Om235haO4UNRRrePQ26dASwn3AeNfBZ8+UJYfChy3rPFfrBduU7E3NYjpf022MfxSTRMVun0BLSxPluObpNMDt2t3qZMk5dEnJP3hmUPvyRUXVl6M/ErCmqt4CI6L+skmi0FDhQl3pyEIB3YqlVwKfzHkpUCvad9z8lipIP2la0oSFNl+Bu0WV81FMOPpyzi8lG/F/KVma2N5AteC1pOGRQxvfPNI59Gd5TpMUBLm53rjjr/C9MckdKl/eQUcRl/vyAnFFprFpqRc82FuhUBhZQYIp48ooRQTRbgRPsCYv6vNqp8PIg2+2Jg3NtyDvmipCgy9PKxik2BqfjwiPP2gqIb27qops9w2KXnNnc+kxV8MJYKxoz/cY9cToXEGbSSL981mJSGdEwIbeSE7W6QMRRc5kEmPOuVY9pXjxZaWy4L57pHArAKRT1vithkptqLCkhz/Z88FXKCiAU9o2pVeW0yBLhyOXTFd8VmN2a0iWj+4dIxFtPuTT5BcfTNmCnbwH6kxJeb6XRM0YDbka04ifDLVknNspV31znxkT4aJOrqkI9inf5m4mzRq0FoozDk6XCm0cmPUOknAeg85lfe8ZwrdVAO93VcEfcQhK+xFpoU4vwLkaC4pRDtMDpLh3JNDQ+SQ2dZ4SsaFF39wpo5k1ppnq9GMnkEGX8YugcDf/vYg7liSq10Unx7tfma68/kSkjq1yfB7SheklrAmA7DgC56gvAThiodq5aoIq78VOccqZDO2J8P50gPxSCbbuJB8HjjFbKERwzEsqdmjdBtwRtP7AtH+amkBIfRjv5cYwDZHlsOdh34V2LD4uGeJR6+SQDZ4lTHXH713ViEUGPel20JvBMDjviagHaw0IdMPNg7TUU+/t2ZYULSBfX079sZ9CCQNbXWkDmXuXQhqnqLzl3LAWQg/iIFUineqJnDYPkIPjUDHSKJabcbLwK3wYLd6IQCGrCqtfkUWdI7s6vmB+D6ywzNJWVd5nM3kLJotcMCDjrvNwcTZFM0g9rOZPKozfmHct2FNHws1W4fXyuD6tdlu3O5YuT1tc/2XwssrFXfIxHkNscNblKeohf3cTFnOcbgTmOjROV1VR1s6j2DTlbid8Iqrd2tr8Cd76RHTCmFWLoZ8nNGu/khODEegwKCfhJ+6dJsbXmmzH1bqgTHr1lXA/J7usCzLSNvALbehvm0GIKvwG0eXUq+pCIj4Tdxg3wthFjlQyYD5MoOCU/Qr6TV2QYQOZTW6gXQfO0QSz5vys7O5D1mJ7htUSgURvl5lyEH4dyIsq8Q2cL0RrZlQfZ3ZfS29uRkUrmn8Y53ovfG970sxPqgXFrCAN5Ktua2yA0Il0uNLeAwVtumjxJjvrCwEHoPeaKiUprIz0a9dda4sfH2Gnu8eVH4hdygWkcx/c3vlnCCTQ3JHqMtnFcT7YLP147rkVBA3RMklDPuvCYqRO9bRLC1Ak/fHQia7KGva4/we2SkyuZ8VzGGW9u6vkWwkRn+vpCo50A7mIQBjmUdiSItxJDAPzmnx/4eCIqbxKNrpTQwp2JXE4utHO6tX/UbF+hWQRpWY5t4WsUIV2eBitJ9XhXRuNPUEm1nmtyRvnOugQ1wQL4yOKex/D/UaF0QHgOiTI6lTtQm7p53HnyDanT4McYawngjQoFXk93QNuuy9DPOirw2rNrrhr/09VO5JDJBMIjkkvtkPdOeMP+qo7yYPoetPiy1+Q+aMToOA4vnUsBOfH4+KQRELGXFLDl+4Nr1XVMYEAkuxEQYjU9y2MAvmXZ+fQUiWE5Fx08aEX6TQteCQWuecCp8b0RJURGoTwQJIt0zr6mX32awQZQazAoWaw1s4mN7WKSObqn3/XP57Cpc1QpaMyFq/skQ+4vefAIk7moOlMiqaZ8OKRQXWAxAcmMroz7dQYMuk0SNFqFK9y0QizkYnH7U4o+2EKdMTdZmrmzimZL9+1Plg3Ask89BlA6ax2ijyEDTOwknv+MuHSjaYLJlgIQo1cltPM5I9tfE59CJim1pcIeK7QyVTKdn+NYhY2ROnrnmtdJWAYI8IiN6dwhbvOHs+5G49kxvJNaJI673dB93XYt3CQAavscj4u+XifweH2B0C/QSQjbLMfosdlhYF5goNM1DpTYTJNX17e120tAxAtDI2N2aZpRrUW3ZAk9dyf7Yjn9ni66Ii/YOQilggdZaGplkGmtAdTOIgeBuND7/i3l+P5Z2imQ9Yo5AWt2Txxm+3/0J1xHgD6m0XVhzOhOrv69x8uWpfcwRWZLxhNtf9qaXLjdu5Z1LqHcfm8VHI/RJ67Zb9vmYhRVpyqfKTiMAdTACCLQKJjQSWeXa8c4N+6iF/YpywqC5lPEkSDK7CwEJxRkuV2+tWwXWFDJYLcyuRxDuuGrYgZhsKeAl7E+XkbQolXABacWGwV+8K7gAzu1LFGTKZo5XmpkxH5K6aiR6ZFjh+G9+DmMq9fBuQLQvHLltP3ywZLmg9FyEbSFs4XSp6FDzJNjhMRarCpxQT52ycEbUSqKoKO7bMSk6DrAltQgAx8w+rZPaKa+5uzp0LzN5QT74jxuT+8bk9sPfql4rQdctcdJlfYx5oqjgzR8lEl/imTs3lgSfyoeFDc5H8Mh3yp0BnqVMIm9yCaYbd8rEpWe8Go4xN3PLzBxWUC2e6za/7NtX3smLjZFx4fl6wLChlIcYYBCScZ5KjnwCU4UZ0RMLkW8FTBn0lU/ta8pEdRI2aI8nNYP+vhFhkbM2Sa/Iqsrd84TnzC0twMBVfNtBw9o4R23CmwIRclIJcgQK75qm6IckckjklAoFzCw0MnLChaVi4yXednj0q9BBOOzfOjbjFsYZBHDtDLWsc4/HPvNy2EhDL8hQGAOBo0cUlZNA15dViqbfI9ZJetf86hoftfbYuFS8dmwmlwE98/K7W1cozaXAWBXLwRTdz7/pUhbPgITpgthqqY+g2pGQsjeARiuOYQnwfEjxUYsQjLINUPH1SPtL+KLYxkzD+QcmvStMxqCCTik3lh8hbvfFWohz2k8IZzYSTJiDrXHBWoVMsK4+yhsyqamvLswGZ7e5B7s0AfR2MeHd9ZYFg1NHUAvo6OxLXrol1kPbCikdx0XqjBPC4nWK9sm6iXp1n6DybZ7hKmR06C2PyTm1l5yXqj/35WOxjp8mN9CwnP774H4/8ooUhF75kEhtT4S1ZQtOyWrZ7+C6DpiggUn/grp9mSkTzNNuGivjJ2nO8TOGcFDjFHGxHAgwXxchdQQm5VWceMI6AB0X7T/eOClXnX6dGAvbZ/7uSSNf7ZhHYppH5niRbzcf5qRZ389YjR/ggR5qej72sAyIF5QRSUCaWPzdK7OitFcQWnxTj5qSxoB0hP9XmyzoDiXVkndr+mxycTv2wbtLTNplmhU9kbqCoBx7Hn7MyT1tuA1v9/k129+RJoIXo1nDW1e1MZZJCJozxPM781yHiEu1n+ppCgZ/LE/4R63D3sE6y5e0tWMVp5llF18c10wOBD0RwAb8aB8SRSWn2pfiOjhY8Jo6K8/9XkpQkaiIO6rq69f6EKjuDkBzKZuSBl54zcO3YRSRv/Camy+tL+OjbQntxKypS9yIHWKhaM1xI+zAMG0jkYGtn1ekO1kx+qHs8E3aw2+rNyy+L1TwuMabh5GeOUOcM1Fq9Xt7cgBmo9sLxRY6CIPUZ276EFf4bgTIPhxAuFJkdXV18i9AjVhj2J8R2KcjFI1XwJ5LSbg+IcH60pPp1Ee5BFZ6m13PTzvTHSgzsgFLc2j4apgu7N2/uozHWvHJ7WjqAoK/KVPMo3Ry/eji77b9rB55U3EQe5TKGR22z7ltDKJWl9l1XfD658x3Lldf1sNjgSSSCyYVu3kMez9Qxw+TlWI1cniR8BtZtg9tjRks9CXlQEGtIRv3VX4PzyN6UfUdgqgsMe5D7RZB7q/KsFco79TwL4TECdzap3Jmd79DlBEVKxSbmptejR/Nk53hvtlIzkuKKQA8MFOT/afqMB6yTzcxWLttthN+Q+EYVFUJ3lD1kLY3KvD6lYR4o0Gs8QgWaamsFdmJdyx1sbS8BgCDTu3hjhbY9CKiKsP22NWYwKcvpoksxL5YUfEGAiNJlAd+0wT00c8o7XnTU08eZsy2Ug5OG+SQ0uFSrHTYOxFPxmsTsFm/sXjplz4ZvndydtYFDEVJaaHBgX9Nn6t4yYBanlApEX9wWtRbCzlVqEL6jyKa62XkLTTKh+SB2BpZaMVbCtDvrAZK8AymdB6mMlLeDf6aZMRZkR9n1ZFvLq1JdAflRR2Jr9Wk1eJ9RKsSMl2X7/Ej14Mm3kUosGl9m3icBWY1u7ibWqZjEL41/3AEgyyBDYf/E/TGd/49ed+GcLhYugUUVxgg+Z/taPw4I+PQyKwKwyRPLlf6gls8YnvoD++1YNwCcBTIbExJOcqmWw+M4SHW/uKFp/zmDq5CWYDlkPMZVZvL1TwOpLbt6OaOJEFFDJeMJXfzSZVwj1QFpK60i5QBCgYJq+zj95wfPA1PacTyim83jusaC1okZjziLFXKB/Qnqj2V2LiR68chDA//rgtgz8xBqS57J4Xd9uhAhLFYm4EyfbzOvrGIaJIx/FmP+3ieW05vcfE4sxmFGjs61siOBrOBoI66lAGp2r0cPcjpjeykWlxy9auWAB63tcePFv/dwTfwgJJKfpo8rSJxPmGedzzP0FM0HBL/wcfItZe4XV+qTXtxsogUD5rO1PhhIkz279cJxrxpM5o61xHoeKnJ66R4/oy2XAMYA91unWr/7AvW3s8eqEfjn3nWm9HWdcTNC5aoXb3tJe7mYCQZAEidpAkzepgoRTGww+yVM8bYS8KAU7uzctbbWUyyCFqmHrrb3ue77zkgSbU+zOVhwBTGuBJgVx6ToIFejE/cpehHL7NB6EGvnowtnG/QBFrvP3jFcnySKRHYkemSclcnTVvyeMiM1mn9fgPmq2bxa7T62IKwiFDclW+qGendr1dd8Q64aMXOd1yeU/WMz1UWYI5SmkrLUzkI6Xf3/6PzyYYNKI8o/F6dJSGXV6CyUhJuuSCuJYWSqZNNg4FD/+xwpNPdUrza1ON9tsDjsqa0PG1wxEEOlTax07Pf7FrqOKMYiTpiyT8KFzJHVbBMZe/dFWwH2ChU7VAPNN6KG9sGGgL+kmKrj6S7IlPvmOP3XmzcQyJYBahQAT3gmGjea1GHW3UxHR5tiKvZ/dvaWyzGdvxYKu1GKL+T2BjpT26qoaK02mIvx9gleAsattMVkdaq+ocYd901G6ao9s7iHGt5oA7Burkgf7oXMQsog5TTukw4PVMZhIZJVEUlW7ScsgGYz0Gf1OSJWSVyHu777S8t9JJ4btSh7Uef1SoWgCIFnSfLtzfnlRcTkQ+tFV2dbduOf8a9cF8MWcLRNFmpFU6Y7XfGfs2cWpRiUbiXO7236tdHaeC9fVd1CVS0CoC4TGl8WMuGrP88L1dZ/TkorS2TBLHH1Mr8LRmUVONznM9lbtYouLGHqI+Hy7mVHz81ZkQqtiuG4lxxFhC4YXpiziJHA7W9Deyp5Enpk4ixheuwfZebp46N9wnvJmWWBW8Fip6u1i3ZAcas2aysydG886MK1xdKbbX10T9jLSFEdTCt98Kton+Sv6BAr3paf56gt4GJGJwFaSvIFTU1M8toN4nRqatu3nJjfuVvgsEp06peuNmBW12zBuOGguHUwSp4EdI3fuap9uKJLa7iKdpPTPrrknx9I42Y+mpqYrZymrd6+d6MiluVoVDzkn870Kzz5/uLU/a/M0u10rLWvA/T9eZmXcmp2X+5xfH/N46tqusDXUseUVkY2r+VHFluLN/p0BlOK6A7QHW2EPu+6iwhMQJfLm/O+WsmmUitZAjdvLG2sfn2R0Ryy3G55OXKKrq6adcY+uCsDsxrUgqed9rEs0lxtsiO30gwuBpuQ1/hYBqSFOjqyEYc1OkfBD7eHEG3fZuaH2lbExzEBYTmUdSCa1a3Ku2Tqy7rwqUs2/M817LVulzQZa8HrJFX4SFPW8si/sK4vfWeFvpXmR4Xko6fM6hw+q3AZ3kLNPkQIXGosrr9fb/aJ4LqZZvxrkCXQ1W7W53CSXITkdqOZvwAxdjKqntLu50HGVOMiM00A/T3/UKYQDd4Moj2OmBFkDaCGYdHDPn/89XS+iAsXTtrvfumoNVlmx/bOBnn06qqlkQM9K+AGiFl0DVb45UR3FUDE+vBKe2dW5qqy2e/39rQ1u2tQdFqG90T6yCSIqZNeQpCPmxBMoKd//6+GEmfg94LtB5mziBD8v/H93PolZbhsO718rGOxMrpIQCVxoZAPUHg1+/Tur0YlnOiVfenLFRQzdXV265PENBLTr88Z7C6/jjq8sNzRx3/nhkNjrbK49JfJHE0JORp8ywoEs1Wd6S9jT9U6WCOj/9b23S/ni9wTy5SlGFSchDPRgvD/L8DTqIbPF7QIwt5FrJFYcQ8QRqkwjbPPeQj2JPzWZ2k2wj56vXeg0ZePG8UEO97B2aZodOBXu/hdobjvSiqJH8gqbGlmAwfLauPSe/ILTljXlw2zmKuY+m+CW43ynLs+bu59nrUIh1xRBbeOH4/afS7fwbLQyeH8tcx+CUhksiN+BKw6tb0zqqfgpTCqekmKOx1P5Uw3t/MgCG8lp8MSUjn5QxucTua9219q4JO9yhfIlV08HIhPSXzK78mGic8T/tIFnNIokgd1D3DgQ6W9VGvs2Ixtu5R0kLAxPJA1KwaGyuAtfGwVvkHisBiOTG4tW6pvv7RyhDJ8umrmrMncBjOC18V2sntizJPiQXApSLU8Y6R9KtXxOrx7V7HzII2laaXsi5OoL1r9NCx7V2SZoM9lckujdyMvr0aQIDrtjAJ6gqwBF77BL2zjAZjDQLzgRaUkDZB1lsU8yZVDM9zU/khm7cPQo/XeCX0YKTX4CkRewFZ3TZXZWJUTklx/juNeGgmoJCAr7K3kqxLZ8T/mCN1r/qPsigbTasUl3CI36WRYtJC85DedlkZ+2wdVHn2aG38KF3QcY8H7TKOXM3+X4XDHHVHEZMpoSpTpq53O4cJoP0jYPXe9axn9HOXLNhmTgT9sCe1SKMzC+MQZqW7kicTMN3wI/O3JlDtn2iSCHTuBxTTMTUGv7FJkjRVJoJn/6oOlp20uxtTX2WuBvhy1NVSPJ2Ski3tC26d0I5bCfU79NSJ0m0dPX5b3GY2ZO4Z4uD8DOy7bQvun/TuIqsz/vPKzddA+BWOMJtc+50SN8vStG9TZGQ5H2L1s4R/VOuYCzIEPYfdhZlcfDEOcNTx0e2sGKezFAdSq9qkCSDfIBdLhCKlPeWgekYTnFvM/I0F2zOfxRpQAQBcJH41VPLE74jULk7BGmEBYsc5fpZcrhy9YSrh/tTbKX+U2mswzXZQlDSrl4LcK5iD/Q/IeghGpg6p0G8YfeycwBljr+YBwex7tJJ683NQqknpwxF10kYS6ZfZRUUYjMbckHpqILaC1HUOORZYaq/dY1/mfusfQaHhMkZpVvRM6q311Uw4Jnp3Ys9qQsUE7r3276w8npOp7be1lc9DJk2tVwiuD7bv9KCketJCmhqFwlSUYlXniiRs/1NG6r/klvA7VSqLr8RpIpN1Xu2mWx4i6+6Gtmy71uMk+zgJrOTAO/1xXAeS2lziG2e/MlJW6lKL2HI+Y308pTobX6B+S5eCgtGx93YQE9i+5z4p7whDFJG7+6PLOao1d/d0Z9+gAZsPtGZg7d7PcDPjR/LWP0bAkaW9M5ZnL7EaC5aeFTL9oa7jfUsA8PAD6cjd1HwgkCLbNFum799AZz0XzT2aouuNZSCJYjL/4IyIQkBpMECFKYaXfR59kdMxpR1YhX5aG2CEe5EuGPGPLjbX8sPZJNu6zUPZpnbun2r1ELohXIydB6heMc8dn8/C2Xc1OnyKSXrlrzBbt+QJ98vQWdFHQ7mzZeZtBn+GT37Pseo/ksVE+Kl9i/u3FkiJ1nix4T9wt4Uf9Y+F5ODHpe0RfqSkeklp/ILPoqZatTUD9a3GCDncww62KCXsGej6aH0ejbYI3jBSpF+rZ6wA9llWU6Y4cApjDkNO04rUkP2uuskdMXKQ5MCexANoXQaTS4zFZLQxyeD4dxuu5r0R5CTo/QId2UotJ+8Ghhm7wkSGfRcyOZ4YldDf4ufJA4dx4/YFj+ItAGA9l5flHFIgDwxkcAftsikStMV8ssTGBnllYd/dmpO+t2GRVhexYpdkG9i7ksrOTiLQ6U6Wua3EPMMWxQgIwXK76eA16Xb8dEGH6lxkjaNx87EIsnAJg6Kl4e35z6ubSdukqMARoWNBijEhgICNhRkc2tc+0BrjUQMtubPoXmNDArdLIcbmK2BJ3qeoObjhOaGodNl33kKjXbXrC3KCdNGeTWqoG9cXkMJejr7VeclDCSi6KwpUOFG+0T/rpSxZgFgb6N1BIL+j5K1CzMG4ehYSALjWKYLjd/ZNuhtUGgreBWglMxIy9WuHkOHi3e3I+mxcF9ve9vVtcUv3PjcqMnqaEY+jSgbRB7vqS5QkV5VjXREwjg4ZICHA+9kI4M6/dz852nUE5F7ex6mVkIHoMYUaMYRzDNk6vxSjO0T6XBQoPXlrqyLsa5HHrOVzYzu4IOmZss/NrWwz+KDR/WhYx95aNaSrnKk7cGgVsFIYR2eo2JXWHExY4TjNoGm8vRCOfuNOUbOecuNQb/r6yTUvueSMG0ufx1D1+67jCeO9z59B1UucFoWWgkoG1sC1/pc5gZ5AqXBLLogUp5IZTTDjB2hsfUxStD2qvVN5+UENsiek/bt/iXALXIC2Bmx2CJv9KMWtcqlJDQTSN056qSx3eTRJH15eQxk0rehUYJl2deWhxVF+5+jumpwO3KGS2gPh0scQSYuNUV7wTQgAf/VCWiiFKgeqkQFGSyloqMP0Jb7jnLA5ugSGfoaRGN9FkApU7oMe4rD3M1BWtyUaNBIV3tMR4ahbUxkjhxWWZymMlqoZXYisZeEhdDBrPqg5clykYLFNEldIQTUdMWTrNf7h6uIqDgHg0OjK0TzoKIXDM4t8ADEq5aEKu1VlSyeiifmZxTnGJMQRX5ZqSSZdWTADR/BTTvMFvPwdtlm1GC3Cc1JfdBrgw0VpQy9wTiU4XMCG9U/wX3mjXAmNUUQUU3AeP7JfYVRlfB/JVEL+ZrEHkH7D+T0vOGFhSDm3dNwyDzoLt8BTMW0qy8+VcjlsvCLpkeVviyce4HOgvi8ztHNCLVcxF9RJsmv9FJYt2+JDJze7UNb2YoF7MRlvCmz1GAAIrKvZ/3BPD1DMMnCGbHfw8X8PAcuZypRjb3zUZNl1eaSDNDcahJomkE9qJ4pqMZMW31imZlOl7zqspfLexwmnotSA7ia0bVKSLUmVbXyUFgPPtSdpOCCIGO1nXF/LfB+qhzlCUFYlR783jmzd6F9UR/7IA4U8OQ6QgfJas/3Jbtl8ZBry99HRlA3xzfsnlfUUJtd/GBpVBYs5yL9VzKf0QlFfRQ+IPnXIKSTtFvFGLnrUPwLxM4SKpX5otYd5zFv/PcfpjafmkGrnRhlP9bM2fKUOUwwtVDu/iajOc28C5/OwdQXXi/IqJ1eol2zp8JkfjQNcSiu9U9OypU6vnklztZcVDcnrtGwHWf09pRtP/NWnQE5nrMZBdi6Ap9ovEIVsrE7r1ZPedihH019SRA==","it":200000};
+(function(){
+  function b64d(s){var bin=atob(s);var u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+  async function decryptData(pass){
+    var km=await crypto.subtle.importKey("raw",new TextEncoder().encode(pass),"PBKDF2",false,["deriveKey"]);
+    var key=await crypto.subtle.deriveKey({name:"PBKDF2",salt:b64d(ENC.salt),iterations:ENC.it,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"]);
+    var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:b64d(ENC.iv)},key,b64d(ENC.ct));
+    return new TextDecoder().decode(pt);
+  }
+  async function submitPass(){
+    var el=document.getElementById("lockpass"); var err=document.getElementById("lockerr"); err.textContent="";
+    try{
+      var html=await decryptData(el.value);
+      document.getElementById("content").innerHTML=html;
+      document.getElementById("lockgate").style.display="none";
+    }catch(e){ err.textContent="パスフレーズが違います"; }
+  }
+  document.getElementById("lockbtn").addEventListener("click",submitPass);
+  document.getElementById("lockpass").addEventListener("keydown",function(e){ if(e.key==="Enter") submitPass(); });
+  document.getElementById("lockpass").focus();
+})();
+</script>
 </body>
 </html>
