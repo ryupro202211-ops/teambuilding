@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>事業計画シミュレーター</title>
+<style>
+  :root{
+    --ink:#1c2b24;
+    --paper:#f6f4ee;
+    --line:#d9d4c6;
+    --accent:#2f5d4e;
+    --accent-soft:#e4ede8;
+    --gold:#a9782f;
+    --mono: "SF Mono","JetBrains Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;
+    padding:32px 16px 60px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  header{margin-bottom:22px;}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--accent);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{
+    font-size:22px;
+    margin:0 0 6px;
+    letter-spacing:.02em;
+  }
+  .sub{color:#6b7268;font-size:13px;margin:0;}
+
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin:22px 0 20px;
+    background:#ece8dc;
+    border-radius:9px;
+    padding:4px;
+  }
+  .tab-btn{
+    flex:1;
+    border:0;
+    background:transparent;
+    padding:10px 14px;
+    font-size:13.5px;
+    font-family:inherit;
+    font-weight:600;
+    color:#6b7268;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .tab-btn.active{
+    background:#fff;
+    color:var(--accent);
+    box-shadow:0 1px 2px rgba(0,0,0,.06);
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 22px 8px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    font-size:13px;
+    font-family:var(--mono);
+    letter-spacing:.06em;
+    color:var(--accent);
+    margin:0 0 16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .card h2::before{
+    content:"";
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--gold);
+    display:inline-block;
+  }
+
+  .field{margin-bottom:16px;}
+  label{
+    display:block;
+    font-size:12.5px;
+    color:#4a534d;
+    margin-bottom:6px;
+  }
+  .input-row{
+    display:flex;
+    align-items:center;
+    border:1px solid var(--line);
+    border-radius:7px;
+    overflow:hidden;
+    background:#fcfbf8;
+  }
+  .input-row input{
+    flex:1;
+    border:0;
+    background:transparent;
+    padding:10px 12px;
+    font-size:16px;
+    font-family:var(--mono);
+    color:var(--ink);
+    min-width:0;
+  }
+  .input-row input:focus{outline:none;}
+  .unit{
+    padding:0 12px;
+    font-size:12px;
+    color:#8a8f86;
+    border-left:1px solid var(--line);
+    white-space:nowrap;
+  }
+
+  .flow{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:#6b7268;
+    background:var(--accent-soft);
+    border-radius:7px;
+    padding:12px 14px;
+    line-height:1.9;
+  }
+  .flow .val{color:var(--accent);font-weight:600;}
+  .flow .cap{color:var(--gold);}
+
+  .split{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:4px;
+  }
+  .split-item{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px 10px;
+    text-align:center;
+    background:#fcfbf8;
+  }
+  .split-item .role{
+    font-size:11px;
+    color:#6b7268;
+    margin-bottom:6px;
+    font-family:var(--mono);
+    letter-spacing:.05em;
+  }
+  .split-item .pct{
+    font-size:10.5px;
+    color:#a9a490;
+    margin-bottom:2px;
+  }
+  .split-item .amt{
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+    font-family:var(--mono);
+  }
+
+  .total-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:14px 4px 6px;
+    border-top:1px dashed var(--line);
+    margin-top:14px;
+  }
+  .total-row .label{font-size:13px;color:#4a534d;}
+  .total-row .amt{
+    font-family:var(--mono);
+    font-size:20px;
+    font-weight:700;
+    color:var(--accent);
+  }
+
+  .note{
+    font-size:11px;
+    color:#9a9c93;
+    margin-top:14px;
+    line-height:1.7;
+  }
+
+  .decision-box{
+    display:flex;
+    gap:14px;
+    align-items:baseline;
+    font-family:var(--mono);
+    font-size:13px;
+    color:#4a534d;
+  }
+  .decision-box .big{
+    font-size:22px;
+    font-weight:700;
+    color:var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Career up College — 報酬試算</p>
+    <h1>事業計画シミュレーター</h1>
+    <p class="sub">販売流通、人財、不動産の収入を計算します。</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overall">全体</button>
+    <button class="tab-btn" data-tab="sales">販売・流通</button>
+    <button class="tab-btn" data-tab="fte">正社員転職</button>
+    <button class="tab-btn" data-tab="ses">SES</button>
+    <button class="tab-btn" data-tab="realestate">不動産</button>
+  </div>
+
+  <!-- ===================== 全体タブ ===================== -->
+  <div class="panel active" id="panel-overall">
+    <div class="card">
+      <h2>共通の入力</h2>
+      <div class="field">
+        <label>先行投資の人数（販売・流通タブで使用）</label>
+        <div class="input-row">
+          <input type="number" id="overall_salesCount" value="20" step="1" min="0">
+          <span class="unit">人</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>チーム人数（SESタブで使用）</label>
+        <div class="input-row">
+          <input type="number" id="overall_teamCount" value="30" step="1" min="0">
+          <span class="unit">人</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>正社員転職の決定件数</label>
+        <div class="input-row">
+          <input type="number" id="overall_fteCount" value="1" step="1" min="0">
+          <span class="unit">件</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>不動産の成約件数</label>
+        <div class="input-row">
+          <input type="number" id="overall_reCount" value="1" step="1" min="0">
+          <span class="unit">件</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>集計するタイトルを選択</h2>
+      <p class="note" style="margin-top:0;margin-bottom:12px;">複数選択可（人財はコア・アントレ・オーナーで兼任可能なため）</p>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);">
+          <input type="checkbox" id="overall_core" checked style="width:16px;height:16px;">
+          コア
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);">
+          <input type="checkbox" id="overall_entre" style="width:16px;height:16px;">
+          アントレ
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);">
+          <input type="checkbox" id="overall_owner" style="width:16px;height:16px;">
+          オーナー
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>担当する役割</h2>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);">
+          <input type="checkbox" id="overall_caRole" style="width:16px;height:16px;">
+          CA
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink);">
+          <input type="checkbox" id="overall_reSalesRole" style="width:16px;height:16px;">
+          不動産営業
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>集計結果</h2>
+      <div class="flow" id="overall_flowBox"></div>
+      <div class="total-row">
+        <span class="label">合計金額</span>
+        <span class="amt" id="overall_totalAmt">–</span>
+      </div>
+      <p class="note">
+        ※ 各タブ（販売・流通／正社員転職／SES／不動産）で計算された金額のうち、選択した役割（コア・アントレ・オーナー）に対応する部分を合算しています。<br>
+        ※ 対応関係：アントレ＝販売流通・正社員転職・SESのアントレ。オーナー＝販売流通のオーナー／正社員転職・SESのオーナー／不動産のオーナー。<br>
+        ※ CA（担当する役割）にチェックを入れると、正社員転職・SESのCA分を加算します。不動産営業（担当する役割）にチェックを入れると、不動産の営業分を加算します。<br>
+        ※ 販売流通はコア・アントレ・オーナーが重複しないよう、複数選択時は「オーナー＞アントレ＞コア」の優先順位で1つのみ加算します。<br>
+        ※ 不動産の紹介者、SES/正社員転職の紹介者は、コア・アントレ・オーナーのいずれにも該当しないため合計に含まれません。<br>
+        ※ この対応関係が実際と違う場合は教えてください。式を調整します。
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== 販売・流通タブ ===================== -->
+  <div class="panel" id="panel-sales">
+    <div class="card">
+      <h2>計算の流れ</h2>
+      <div class="flow" id="sales_flowBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>コア・アントレ・オーナーへの分配</h2>
+      <div class="split">
+        <div class="split-item">
+          <div class="role">コア</div>
+          <div class="pct">固定 ¥200,000</div>
+          <div class="amt" id="sales_coreAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">アントレ</div>
+          <div class="pct">固定 ¥300,000</div>
+          <div class="amt" id="sales_entreAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">オーナー</div>
+          <div class="pct">18%</div>
+          <div class="amt" id="sales_ownerAmt">–</div>
+        </div>
+      </div>
+      <p class="note">
+        ※ 計算式：基準額＝先行投資の人数 ×13万円。コアは20万円固定、アントレは30万円固定、オーナーは基準額に対する独立した取り分（18%）として計算しています。<br>
+        ※ 前提や配分ロジックが違う場合は教えてください。式を調整します。
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== 正社員転職タブ ===================== -->
+  <div class="panel" id="panel-fte">
+    <div class="card">
+      <h2>入力</h2>
+      <div class="field">
+        <label>求職者の想定年収</label>
+        <div class="input-row">
+          <input type="number" id="fte_income" value="4000000" step="10000">
+          <span class="unit">円</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>成約金額率（想定年収に対する割合）</label>
+        <div class="input-row">
+          <input type="number" id="fte_contractRate" value="20" step="1" min="0" max="100">
+          <span class="unit">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>送客人数（任意・決定人数の見込み計算用）</label>
+        <div class="input-row">
+          <input type="number" id="fte_referrals" value="10" step="1">
+          <span class="unit">人</span>
+        </div>
+      </div>
+      <div class="decision-box" style="margin-bottom:16px;">
+        <span>決定人数の見込み（送客人数×50%×20%）：</span>
+        <span class="big" id="fte_decisionCount">–</span>
+        <span>人</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>計算の流れ</h2>
+      <div class="flow" id="fte_flowBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>紹介者への支払い</h2>
+      <div class="split" style="grid-template-columns:1fr;">
+        <div class="split-item">
+          <div class="role">紹介者</div>
+          <div class="pct">UCHIAGE控除後 ×10%（上限10万円）</div>
+          <div class="amt" id="fte_referrerAmt">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>CA・アントレ・オーナーへの分配</h2>
+      <p class="note" style="margin-top:0;margin-bottom:14px;">分配原資 = UCHIAGE控除後の金額 − 紹介者への支払い</p>
+      <div class="split">
+        <div class="split-item">
+          <div class="role">CA</div>
+          <div class="pct">30%</div>
+          <div class="amt" id="fte_caAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">アントレ</div>
+          <div class="pct">35%</div>
+          <div class="amt" id="fte_entreAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">オーナー</div>
+          <div class="pct">35%</div>
+          <div class="amt" id="fte_ownerAmt">–</div>
+        </div>
+      </div>
+      <div class="total-row">
+        <span class="label">分配原資（CA+アントレ+オーナー合計）</span>
+        <span class="amt" id="fte_totalAmt">–</span>
+      </div>
+      <p class="note">
+        ※ 計算順序：成約金額 → Circus手数料10%控除 → UCHIAGE20%控除 → 紹介者報酬（上限10万円）控除 → 残りをCA/アントレ/オーナーで分配。<br>
+        ※ Circusと紹介者は、CA・アントレ・オーナーとは別枠で先に差し引きます。<br>
+        ※ 残った金額をCA30%・アントレ35%・オーナー35%（合計100%）でそれぞれ独立に分配しています。<br>
+        ※ 前提や計算順序が違う場合は教えてください。式を調整します。
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== SESタブ ===================== -->
+  <div class="panel" id="panel-ses">
+    <div class="card">
+      <h2>入力</h2>
+      <div class="field">
+        <label>求職者の月収</label>
+        <div class="input-row">
+          <input type="number" id="ses_income" value="500000" step="10000">
+          <span class="unit">円</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>UCHIAGEへの払い出し率</label>
+        <div class="input-row">
+          <input type="number" id="ses_uchiageRate" value="10" step="1" min="0" max="100">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>計算の流れ</h2>
+      <div class="flow" id="ses_flowBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>CA・アントレ・オーナーへの分配</h2>
+      <p class="note" style="margin-top:0;margin-bottom:14px;">分配原資 = UCHIAGE控除後の金額 × チーム人数×30%の整数部分</p>
+      <div class="split">
+        <div class="split-item">
+          <div class="role">CA</div>
+          <div class="pct">30%</div>
+          <div class="amt" id="ses_caAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">アントレ</div>
+          <div class="pct">35%</div>
+          <div class="amt" id="ses_entreAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">オーナー</div>
+          <div class="pct">35%</div>
+          <div class="amt" id="ses_ownerAmt">–</div>
+        </div>
+      </div>
+      <div class="total-row">
+        <span class="label">分配原資（CA+アントレ+オーナー合計）</span>
+        <span class="amt" id="ses_totalAmt">–</span>
+      </div>
+      <p class="note">
+        ※ 計算順序：月の報酬（月収×10%） → UCHIAGE控除（率は上の入力欄・デフォルト10%）→ チーム人数×30%の整数部分を掛ける → CA/アントレ/オーナーで分配。<br>
+        ※ SESはCircus手数料・紹介者報酬は発生しません。<br>
+        ※ CA30%・アントレ35%・オーナー35%（合計100%）でそれぞれ独立に分配しています。<br>
+        ※ 前提や計算順序が違う場合は教えてください。式を調整します。
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================== 不動産タブ ===================== -->
+  <div class="panel" id="panel-realestate">
+    <div class="card">
+      <h2>入力</h2>
+      <div class="field">
+        <label>家賃</label>
+        <div class="input-row">
+          <input type="number" id="re_rent" value="80000" step="1000">
+          <span class="unit">円</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>仲介手数料率（家賃に対する割合）</label>
+        <div class="input-row">
+          <input type="number" id="re_agencyRate" value="100" step="1" min="0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>AD率（家賃に対する割合）</label>
+        <div class="input-row">
+          <input type="number" id="re_adRate" value="100" step="1" min="0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>計算の流れ</h2>
+      <div class="flow" id="re_flowBox"></div>
+    </div>
+
+    <div class="card">
+      <h2>アーバントラストへの支払い</h2>
+      <div class="split" style="grid-template-columns:1fr;">
+        <div class="split-item">
+          <div class="role">アーバントラスト</div>
+          <div class="pct">基準額10万円以上：基準額×0.3＋5,000円／10万円未満：35,000円固定</div>
+          <div class="amt" id="re_urbanTrustAmt">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>オーナー手数料</h2>
+      <div class="split" style="grid-template-columns:1fr;">
+        <div class="split-item">
+          <div class="role">オーナー手数料</div>
+          <div class="pct">固定 ¥3,000</div>
+          <div class="amt" id="re_ownerFeeAmt">–</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>紹介者・営業・オーナーへの案分</h2>
+      <p class="note" style="margin-top:0;margin-bottom:14px;">案分原資 = 業務委託費 − オーナー手数料3,000円</p>
+      <div class="split">
+        <div class="split-item">
+          <div class="role">紹介者</div>
+          <div class="pct">20%</div>
+          <div class="amt" id="re_referrerAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">営業</div>
+          <div class="pct">65%</div>
+          <div class="amt" id="re_salesAmt">–</div>
+        </div>
+        <div class="split-item">
+          <div class="role">オーナー</div>
+          <div class="pct">15%</div>
+          <div class="amt" id="re_ownerAmt">–</div>
+        </div>
+      </div>
+      <div class="total-row">
+        <span class="label">案分原資（紹介者+営業+オーナー合計）</span>
+        <span class="amt" id="re_totalAmt">–</span>
+      </div>
+      <p class="note">
+        ※ 計算順序：基準額＝家賃×仲介手数料率×消費税10% ＋ 家賃×AD率 → アーバントラストへの支払い＝基準額が10万円以上なら基準額×0.3＋5,000円、10万円未満なら35,000円固定 → 業務委託費＝基準額－アーバントラストへの支払い → オーナー手数料3,000円を控除 → 残りを紹介者20%・営業65%・オーナー15%（合計100%）で案分。<br>
+        ※ 前提や計算順序が違う場合は教えてください。式を調整します。
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function yen(n){
+  return "¥" + Math.round(n).toLocaleString('ja-JP');
+}
+
+// 全体タブ集計用：各タブの計算結果を保持
+const results = {
+  sales: { core: 0, entre: 0, owner: 0 },
+  fte:   { core: 0, entre: 0, owner: 0 },
+  ses:   { core: 0, entre: 0, owner: 0 },
+  re:    { owner: 0 }
+};
+
+// prefix: 'fte' or 'ses'
+// mode: 'fte' の場合は「成約金額＝想定年収×入力率」、'ses' の場合は「月の報酬＝月収×10%」
+function calc(prefix, fixedUchiageRatePct, mode){
+  const income = parseFloat(document.getElementById(prefix + '_income').value) || 0;
+  const referralsEl = document.getElementById(prefix + '_referrals');
+  const referrals = referralsEl ? (parseFloat(referralsEl.value) || 0) : 0;
+
+  let uchiageRatePct;
+  if (fixedUchiageRatePct !== null) {
+    uchiageRatePct = fixedUchiageRatePct;
+  } else {
+    const el = document.getElementById(prefix + '_uchiageRate');
+    uchiageRatePct = parseFloat(el.value) || 0;
+  }
+  const uchiageRate = uchiageRatePct / 100;
+
+  let baseAmount, baseLabel, sourceLabel, rateLabel;
+  if (mode === 'fte') {
+    const contractRate = (parseFloat(document.getElementById(prefix + '_contractRate').value) || 0) / 100;
+    baseAmount = income * contractRate;                       // 成約金額
+    baseLabel = '成約金額';
+    sourceLabel = '想定年収';
+    rateLabel = (contractRate*100).toFixed(0) + '%';
+  } else {
+    baseAmount = income * 0.10;                                // 月の報酬＝月収×10%
+    baseLabel = '月の報酬';
+    sourceLabel = '月収';
+    rateLabel = '10%';
+  }
+
+  let circusFee = 0, afterCircus = baseAmount;
+  if (mode === 'fte') {
+    circusFee = baseAmount * 0.10;                              // Circusプラットフォーム手数料（SESは対象外）
+    afterCircus = baseAmount - circusFee;                        // Circus控除後
+  }
+  const afterUchiage = afterCircus * (1 - uchiageRate);         // UCHIAGE控除後
+
+  let rawReferralFee = 0, referralFee = 0;
+  const cap = 100000;
+  if (mode === 'fte') {
+    rawReferralFee = afterUchiage * 0.10;                        // 紹介者10%（SESは対象外）
+    referralFee = Math.min(rawReferralFee, cap);                 // 上限10万円（紹介者への支払い）
+  }
+
+  const distributable = afterUchiage - referralFee;             // CA/アントレ/オーナーの分配原資
+
+  let teamMultiplier = 1, teamCount = 0;
+  if (mode === 'ses') {
+    teamCount = parseFloat(document.getElementById('overall_teamCount').value) || 0;
+    teamMultiplier = Math.floor(teamCount * 0.3);                // チーム人数×30%の整数部分
+  }
+
+  let fteCount = 1;
+  if (mode === 'fte') {
+    fteCount = parseFloat(document.getElementById('overall_fteCount').value) || 0;
+  }
+
+  const finalMultiplier = teamMultiplier * fteCount;              // SESはチーム倍率、正社員転職は決定件数を乗算
+
+  const ca = distributable * 0.30 * finalMultiplier;
+  const entre = distributable * 0.35 * finalMultiplier;
+  const owner = distributable * 0.35 * finalMultiplier;
+  const distributableFinal = distributable * finalMultiplier;
+
+  const decisionCount = referrals * 0.5 * 0.2;
+
+  const decisionCountEl = document.getElementById(prefix + '_decisionCount');
+  if (decisionCountEl) decisionCountEl.textContent = decisionCount.toFixed(2);
+
+  const baseLine = `${baseLabel}　　　　　＝ ${sourceLabel} ${yen(income)} × ${rateLabel} = <span class="val">${yen(baseAmount)}</span><br>`;
+
+  let flowHtml = baseLine;
+  if (mode === 'fte') {
+    flowHtml +=
+      `Circus手数料　　　＝ ${yen(baseAmount)} × 10% = <span class="val">${yen(circusFee)}</span><br>` +
+      `Circus控除後　　　＝ ${yen(baseAmount)} − ${yen(circusFee)} = <span class="val">${yen(afterCircus)}</span><br>`;
+  }
+  flowHtml += `UCHIAGE控除後　　＝ ${yen(afterCircus)} × ${(100-uchiageRatePct).toFixed(0)}% = <span class="val">${yen(afterUchiage)}</span><br>`;
+  if (mode === 'fte') {
+    flowHtml +=
+      `紹介者報酬(控除前) ＝ ${yen(afterUchiage)} × 10% = ${yen(rawReferralFee)}<br>` +
+      `紹介者報酬(上限適用) ＝ <span class="val ${rawReferralFee>cap?'cap':''}">${yen(referralFee)}</span>` +
+      (rawReferralFee > cap ? ' <span class="cap">（上限10万円で頭打ち）</span>' : '') + '<br>' +
+      `分配原資　　　　　＝ ${yen(afterUchiage)} − ${yen(referralFee)} = <span class="val">${yen(distributable)}</span><br>` +
+      `決定件数　　　　　＝ <span class="val">${fteCount}件</span><br>` +
+      `最終分配原資　　　＝ ${yen(distributable)} × ${fteCount} = <span class="val">${yen(distributableFinal)}</span>`;
+  } else {
+    flowHtml += `分配原資　　　　　＝ ${yen(afterUchiage)}（UCHIAGE控除後の全額） = <span class="val">${yen(distributable)}</span><br>`;
+    flowHtml += `チーム倍率　　　　＝ チーム人数 ${teamCount}人 × 30% → 整数部分 = <span class="val">${teamMultiplier}</span><br>`;
+    flowHtml += `最終分配原資　　　＝ ${yen(distributable)} × ${teamMultiplier} = <span class="val">${yen(distributableFinal)}</span>`;
+  }
+
+  document.getElementById(prefix + '_flowBox').innerHTML = flowHtml;
+
+  document.getElementById(prefix + '_caAmt').textContent = yen(ca);
+  document.getElementById(prefix + '_entreAmt').textContent = yen(entre);
+  document.getElementById(prefix + '_ownerAmt').textContent = yen(owner);
+  document.getElementById(prefix + '_totalAmt').textContent = yen(distributableFinal);
+
+  const referrerEl = document.getElementById(prefix + '_referrerAmt');
+  if (referrerEl) referrerEl.textContent = yen(referralFee);
+
+  results[prefix] = {
+    core: ca,
+    entre: entre,
+    owner: owner
+  };
+  if (typeof calcOverall === 'function') calcOverall();
+}
+
+function calcFte(){ calc('fte', 20, 'fte'); }   // 正社員転職：UCHIAGE率は固定20%、成約金額＝想定年収×入力率
+function calcSes(){ calc('ses', null, 'ses'); } // SES：UCHIAGE率は入力欄、月の報酬＝月収×10%
+
+function calcSales(){
+  const count = parseFloat(document.getElementById('overall_salesCount').value) || 0;
+  const baseAmount = count * 130000;        // 基準額＝先行投資の人数×13万円
+  const core = 200000;                      // コア固定20万円
+  const entre = 300000;                     // アントレ固定30万円
+  const owner = baseAmount * 0.18;          // オーナー18%
+
+  document.getElementById('sales_flowBox').innerHTML =
+    `基準額　　　　　＝ 先行投資の人数 ${count}人 × ¥130,000 = <span class="val">${yen(baseAmount)}</span>`;
+
+  document.getElementById('sales_coreAmt').textContent = yen(core);
+  document.getElementById('sales_entreAmt').textContent = yen(entre);
+  document.getElementById('sales_ownerAmt').textContent = yen(owner);
+
+  results.sales = { core: core, entre: entre, owner: owner };
+  if (typeof calcOverall === 'function') calcOverall();
+}
+
+function calcRealEstate(){
+  const rent = parseFloat(document.getElementById('re_rent').value) || 0;
+  const agencyRate = (parseFloat(document.getElementById('re_agencyRate').value) || 0) / 100;
+  const adRate = (parseFloat(document.getElementById('re_adRate').value) || 0) / 100;
+
+  const baseAmount = rent * agencyRate * 1.10 + rent * adRate;   // 基準額＝家賃×仲介手数料率×消費税10% ＋ 家賃×AD率
+
+  let urbanTrustFee;
+  if (baseAmount >= 100000) {
+    urbanTrustFee = baseAmount * 0.3 + 5000;               // 10万円以上：基準額×0.3＋5,000円
+  } else {
+    urbanTrustFee = 35000;                                  // 10万円未満：35,000円固定
+  }
+
+  const outsourcingFee = baseAmount - urbanTrustFee;        // 業務委託費＝基準額－アーバントラストへの支払い
+
+  const ownerFee = 3000;                                    // オーナー手数料固定
+  const distributable = outsourcingFee - ownerFee;           // 案分原資
+
+  const reCount = parseFloat(document.getElementById('overall_reCount').value) || 0;  // 不動産の成約件数
+
+  const owner = distributable * 0.15 * reCount;
+  const sales = distributable * 0.65 * reCount;
+  const referrer = distributable * 0.20 * reCount;
+  const distributableFinal = distributable * reCount;
+
+  document.getElementById('re_flowBox').innerHTML =
+    `基準額　　　　　＝ 家賃 ${yen(rent)} × 仲介手数料率${(agencyRate*100).toFixed(0)}% × 消費税10% ＋ 家賃 ${yen(rent)} × AD率${(adRate*100).toFixed(0)}% = <span class="val">${yen(baseAmount)}</span><br>` +
+    (baseAmount >= 100000
+      ? `アーバントラスト支払い ＝ ${yen(baseAmount)} × 0.3 ＋ ¥5,000 = <span class="val">${yen(urbanTrustFee)}</span>（10万円以上）<br>`
+      : `アーバントラスト支払い ＝ ¥35,000固定（10万円未満）= <span class="val">${yen(urbanTrustFee)}</span><br>`) +
+    `業務委託費　　　＝ ${yen(baseAmount)} − ${yen(urbanTrustFee)} = <span class="val">${yen(outsourcingFee)}</span><br>` +
+    `案分原資　　　　＝ ${yen(outsourcingFee)} − ${yen(ownerFee)} = <span class="val">${yen(distributable)}</span><br>` +
+    `成約件数　　　　＝ <span class="val">${reCount}件</span><br>` +
+    `最終案分原資　　＝ ${yen(distributable)} × ${reCount} = <span class="val">${yen(distributableFinal)}</span>`;
+
+  document.getElementById('re_urbanTrustAmt').textContent = yen(urbanTrustFee);
+  document.getElementById('re_ownerFeeAmt').textContent = yen(ownerFee);
+  document.getElementById('re_ownerAmt').textContent = yen(owner);
+  document.getElementById('re_salesAmt').textContent = yen(sales);
+  document.getElementById('re_referrerAmt').textContent = yen(referrer);
+  document.getElementById('re_totalAmt').textContent = yen(distributableFinal);
+
+  results.re = { owner: owner, sales: sales };
+  if (typeof calcOverall === 'function') calcOverall();
+}
+
+['re_rent','re_agencyRate','re_adRate'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcRealEstate);
+});
+
+['fte_income','fte_contractRate','fte_referrals'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcFte);
+});
+['ses_income','ses_uchiageRate'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calcSes);
+});
+
+// タブ切り替え
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// 全体タブ：選択した役割（コア・アントレ・オーナー）と担当する役割（CA・不動産営業）に対応する金額を各タブから合算
+function calcOverall(){
+  const wantCore = document.getElementById('overall_core').checked;
+  const wantEntre = document.getElementById('overall_entre').checked;
+  const wantOwner = document.getElementById('overall_owner').checked;
+  const wantCA = document.getElementById('overall_caRole').checked;
+  const wantReSales = document.getElementById('overall_reSalesRole').checked;
+
+  const lines = [];
+  let total = 0;
+
+  function addLine(tabLabel, roleLabel, amount){
+    lines.push(`${tabLabel}（${roleLabel}） ＝ <span class="val">${yen(amount)}</span>`);
+    total += amount;
+  }
+
+  // CAにチェックが入っている場合のみ、正社員転職とSESのCA分を加算
+  if (wantCA) {
+    addLine('正社員転職', 'CA', results.fte.core || 0);
+    addLine('SES', 'CA', results.ses.core || 0);
+  }
+  if (wantEntre) {
+    addLine('正社員転職', 'アントレ', results.fte.entre || 0);
+    addLine('SES', 'アントレ', results.ses.entre || 0);
+  }
+  if (wantOwner) {
+    addLine('正社員転職', 'オーナー', results.fte.owner || 0);
+    addLine('SES', 'オーナー', results.ses.owner || 0);
+    addLine('不動産', 'オーナー', results.re.owner || 0);
+  }
+  // 不動産営業にチェックが入っている場合のみ、不動産（営業）分を加算
+  if (wantReSales) {
+    addLine('不動産', '営業', results.re.sales || 0);
+  }
+  // 販売流通はコア・アントレ・オーナーが重複しないよう、オーナー＞アントレ＞コアの優先順位で1つだけ加算
+  if (wantOwner) {
+    addLine('販売・流通', 'オーナー', results.sales.owner || 0);
+  } else if (wantEntre) {
+    addLine('販売・流通', 'アントレ', results.sales.entre || 0);
+  } else if (wantCore) {
+    addLine('販売・流通', 'コア', results.sales.core || 0);
+  }
+
+  document.getElementById('overall_flowBox').innerHTML =
+    lines.length ? lines.join('<br>') : '役割を1つ以上選択してください。';
+  document.getElementById('overall_totalAmt').textContent = yen(total);
+}
+
+['overall_core','overall_entre','overall_owner','overall_caRole','overall_reSalesRole'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', calcOverall);
+});
+document.getElementById('overall_salesCount').addEventListener('input', calcSales);
+document.getElementById('overall_teamCount').addEventListener('input', calcSes);
+document.getElementById('overall_fteCount').addEventListener('input', calcFte);
+document.getElementById('overall_reCount').addEventListener('input', calcRealEstate);
+
+calcSales();
+calcFte();
+calcSes();
+calcRealEstate();
+calcOverall();
+</script>
+</body>
+</html>
