@@ -30,11 +30,11 @@ function Trim-TrailingSeparators([string]$PathValue) {
 $base = Trim-TrailingSeparators $base
 $baseName = [IO.Path]::GetFileName($base)
 if ($baseName -ne $app) {
-  throw '削除対象のルート名がマイベストライフではありません'
+  throw 'Deletion root name is not My Best Life'
 }
 if ([string]::IsNullOrWhiteSpace($GardenRootOverride) -and
     -not [string]::Equals($base, $canonicalBase, [StringComparison]::OrdinalIgnoreCase)) {
-  throw '削除対象の本番ルートが想定パスと一致しません'
+  throw 'Production deletion root does not match the expected path'
 }
 
 $work = [IO.Path]::GetFullPath((Join-Path $base '_work'))
@@ -45,7 +45,7 @@ function Get-SafeWorkPath([string]$Candidate) {
   $full = [IO.Path]::GetFullPath($Candidate)
   if ([string]::Equals($full, $script:WorkFull, [StringComparison]::OrdinalIgnoreCase) -or
       -not $full.StartsWith($script:WorkPrefix, [StringComparison]::OrdinalIgnoreCase)) {
-    throw ('_work配下以外の削除を拒否しました: ' + $full)
+    throw ('Refusing deletion outside _work: ' + $full)
   }
   return $full
 }
@@ -53,7 +53,7 @@ function Get-SafeWorkPath([string]$Candidate) {
 function Remove-SafeWorkItem([System.IO.FileSystemInfo]$Item) {
   $full = Get-SafeWorkPath $Item.FullName
   if (($Item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
-    throw ('再解析点の削除を拒否しました: ' + $full)
+    throw ('Refusing deletion of a reparse point: ' + $full)
   }
   Write-Output ('DELETING: ' + $full)
   Remove-Item -LiteralPath $full -Recurse -Force

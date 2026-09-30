@@ -22,6 +22,7 @@ function runCleanup(appRoot) {
 
 test("_work後片付けは安全な一時マイベストライフ配下で再帰削除し、処理中世代は競合回避で残す", (t) => {
   const script = fs.readFileSync(CLEANUP_SCRIPT, "utf8");
+  assert.doesNotMatch(script, /[^\x00-\x7f]/, "Windows PowerShell 5.1 must parse the script in any locale");
   // 未対応版へ実行すると本番固定パスを触るため、期待する安全な入口がなければここで赤にする。
   assert.match(script, /GardenRootOverride/);
 
