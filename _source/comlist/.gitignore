@@ -1,0 +1,10 @@
+node_modules/
+_work/
+_preview/
+_deploy/
+_review-repo/
+*.tmp
+.garden_token
+.gmail_oauth*.json
+garden.config.json
+_quote_history.json

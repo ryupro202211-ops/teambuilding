@@ -1,0 +1,156 @@
+[
+  {
+    "d": "8/15",
+    "dow": "土",
+    "t": "19:00-21:00",
+    "place": "浜松町",
+    "title": "VELTイベント",
+    "theme": "交流飲み会"
+  },
+  {
+    "d": "8/27",
+    "dow": "水",
+    "t": "20:00-22:00",
+    "place": "日比谷公園",
+    "title": "モルック",
+    "sheet": "https://docs.google.com/spreadsheets/d/1zU2jpYg-bhG7z3sgZ-Ba74T1NlohMXXsr-SZeRvwQV0/edit?gid=1025116166#gid=1025116166"
+  },
+  {
+    "d": "9/5",
+    "dow": "土",
+    "t": "19:00-21:00",
+    "place": "東陽町",
+    "title": "フットサル",
+    "sheet": "https://docs.google.com/spreadsheets/d/1kJdxNzkMFhMDwwyq0bH3lTPmOfMh0oEUIMHS4OyKG04/edit?gid=271777000#gid=271777000"
+  },
+  {
+    "d": "9/6",
+    "dow": "日",
+    "t": "19:00-21:00",
+    "place": "大井町",
+    "title": "バスケ",
+    "sheet": "https://docs.google.com/spreadsheets/d/1l5kSQWDCXu-LOXqKFOI0asoCDAdNxIDdrixRkBDjmHI/edit?usp=sharing"
+  },
+  {
+    "d": "9/9",
+    "dow": "水",
+    "t": "20:20-22:30",
+    "place": "",
+    "title": "ライフデザイン講演会"
+  },
+  {
+    "d": "9/11",
+    "dow": "金",
+    "t": "19:30-21:30",
+    "place": "",
+    "title": "経営者交流会",
+    "sheet": "https://docs.google.com/spreadsheets/d/19B0f6nlUDdB0I_Z3ysMybJadm_m9DYMpved_Ct3AQ94/edit?gid=1464281630#gid=1464281630"
+  },
+  {
+    "d": "9/12",
+    "dow": "土",
+    "t": "10:00-13:00",
+    "place": "豊洲",
+    "title": "楽SAKEイベント",
+    "theme": "秋の味覚のBBQ",
+    "url": "https://ryupro202211-ops.github.io/rakusake/events/aki-bbq-2026-09-12",
+    "sheet": "https://docs.google.com/spreadsheets/d/130xD5b-IKs2UrLXuAZ1ATpnG_DO1qoVtbluDPmYxJ9s/edit?gid=1488195776#gid=1488195776"
+  },
+  {
+    "d": "9/18",
+    "dow": "金",
+    "t": "20:00-23:00",
+    "place": "",
+    "title": "Beat One",
+    "theme": "音楽イベント",
+    "url": "https://allcraftjapan.com/events/beat-one/",
+    "sheet": "https://docs.google.com/spreadsheets/d/14wPHfnuhfbLz8H3EO4Xa0J0MiX-IHvl7IfhzXLGl9kE/edit?gid=1646270214#gid=1646270214"
+  },
+  {
+    "d": "9/19",
+    "dow": "土",
+    "t": "19:00-21:00",
+    "place": "浜松町",
+    "title": "VELTイベント",
+    "theme": "交流飲み会"
+  },
+  {
+    "d": "9/20",
+    "dow": "日",
+    "t": "15:20-17:30",
+    "place": "",
+    "title": "ライフデザイン講演会",
+    "theme": "100年時代を生き抜くために"
+  },
+  {
+    "d": "9/20",
+    "dow": "日",
+    "t": "19:00-21:00",
+    "place": "",
+    "title": "情熱飲み会",
+    "theme": "交流飲み会",
+    "sheet": "https://docs.google.com/spreadsheets/d/14CI9w29iOY6HlGDcvXDcAbZpFOOnaQSRxZ5zRp3jzPc/edit?usp=sharing"
+  },
+  {
+    "d": "9/21",
+    "dow": "月",
+    "t": "19:00-21:00",
+    "place": "",
+    "title": "元料理人の料理イベント",
+    "theme": "BBQ",
+    "sheet": "https://docs.google.com/spreadsheets/d/1_XZUNZ2XNG22eCBX01_JAiaIxKfYjNhBgGPXsjObIhM/edit?gid=1585000073#gid=1585000073"
+  },
+  {
+    "d": "9/22",
+    "dow": "火",
+    "t": "日中(22・23)",
+    "place": "",
+    "title": "農業イベント"
+  },
+  {
+    "d": "9/27",
+    "dow": "日",
+    "t": "19:00-21:30",
+    "place": "浜松町",
+    "title": "経済ボードゲーム",
+    "sheet": "https://docs.google.com/spreadsheets/d/1t4pFIe7DIZp1CtOMpPC_4_c9l0C_T8aUfpwyxyYxR1A/edit?gid=1298988464#gid=1298988464"
+  },
+  {
+    "d": "10/7",
+    "dow": "水",
+    "t": "20:20-22:30",
+    "place": "",
+    "title": "ライフデザイン講演会",
+    "theme": "100年時代を生き抜くために"
+  },
+  {
+    "d": "10/8",
+    "dow": "木",
+    "t": "19:30-21:30",
+    "place": "",
+    "title": "経営者交流会",
+    "sheet": "https://docs.google.com/spreadsheets/d/19B0f6nlUDdB0I_Z3ysMybJadm_m9DYMpved_Ct3AQ94/edit?gid=1464281630#gid=1464281630"
+  },
+  {
+    "d": "10/18",
+    "dow": "日",
+    "t": "15:20-17:30",
+    "place": "",
+    "title": "ライフデザイン講演会",
+    "theme": "100年時代を生き抜くために"
+  },
+  {
+    "d": "10/31",
+    "dow": "土",
+    "t": "11:00-18:00",
+    "place": "",
+    "title": "イタリア街ハロウィン"
+  },
+  {
+    "d": "11/3",
+    "dow": "火",
+    "t": "15:00-20:00",
+    "place": "",
+    "title": "リプキャン"
+  }
+]
