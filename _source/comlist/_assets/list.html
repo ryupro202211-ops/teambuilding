@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マイベストライフ</title>
+<link data-comlist="comlist" rel="stylesheet" href="css/comlist.css">
+</head>
+<body>
+<header>
+  <div class="brand-eyebrow">MY BEST LIFE / PERSONAL WORKSPACE</div>
+  <h1>マイベストライフ</h1>
+  <div class="sub">人生のベストを更新し続ける</div>
+  <a class="src-link" href="https://docs.google.com/spreadsheets/d/1vjDb8_5WTfVffwW2iJGLnL_squUAGLRxhAfY_oveHYw/edit?gid=0#gid=0" target="_blank" rel="noopener">📊 元データ（人脈リスト）を開く</a>
+  <a class="src-link" href="https://script.google.com/macros/s/AKfycbzyeaBUinybwbYSRwE_ShG0RJ7M97VGI5gQBzkrxra0dTk5sGMfj-nnT53xOn0XNxjU/exec" target="_blank" rel="noopener">📅 あやのさん紹介デー</a>
+</header>
+<dialog id="person-dialog" class="person-dialog" aria-labelledby="person-title">
+  <form id="person-form">
+    <h2 id="person-title">新しい人を登録</h2>
+    <p>名前を入力して登録できます。ほかの項目は後から編集できます。</p>
+    <input type="hidden" id="person-category">
+    <label>名前・あだ名（必須）<input id="person-name" required maxlength="100" autocomplete="off"></label>
+    <label>仕事<input id="person-job" maxlength="2000"></label>
+    <label>出会った場所<input id="person-place" maxlength="2000"></label>
+    <label>次のアクション日<input id="person-action" type="date"></label>
+    <label>メモ<textarea id="person-memo" rows="3" maxlength="2000"></textarea></label>
+    <label>書き込み用の合言葉<input id="person-token" type="password" autocomplete="off" aria-describedby="person-token-hint"></label>
+    <p id="person-token-hint">閲覧用とは別の合言葉です。登録に成功すると、この端末に保存されます。</p>
+    <div id="person-message" role="status" aria-live="polite"></div>
+    <div class="form-actions"><button type="button" class="btn" id="person-cancel">キャンセル</button><button type="submit" class="btn btn-primary" id="person-save">登録する</button></div>
+  </form>
+</dialog>
+<dialog id="bulk-dialog" class="person-dialog bulk-dialog" aria-labelledby="bulk-title">
+  <h2 id="bulk-title">選んだ人の予定をまとめて編集</h2>
+  <fieldset class="bulk-all">
+    <legend>全員に同じ値を入れる</legend>
+    <p>入れた項目だけが下の全員にコピーされます。空欄の項目は各行の値のままです。</p>
+    <div class="bulk-all-grid">
+      <label>アクション日<input id="ba-ad" type="date"></label>
+      <label>アクション内容<select id="ba-ac"></select></label>
+      <label>次会う日<input id="ba-nd" type="date"></label>
+      <label>次会う日にする事<input id="ba-nw" type="text" maxlength="2000" placeholder="例: サシ"></label>
+    </div>
+    <button type="button" class="btn" id="bulk-apply">全員に反映</button>
+  </fieldset>
+  <div id="bulk-rows"></div>
+  <div id="bulk-message" role="status" aria-live="polite"></div>
+  <div class="form-actions">
+    <button type="button" class="btn" id="bulk-close">キャンセル</button>
+    <button type="button" class="btn btn-primary" id="bulk-save">まとめて保存</button>
+  </div>
+</dialog>
+<div class="shell">
+<nav class="sidenav">
+  <div class="tabs" id="tabs">
+    <button class="tab" data-view="today"><span class="menu-icon menu-today" aria-hidden="true"></span><span>今日のタスク</span></button>
+    <button class="tab active" data-view="garden"><span class="menu-icon menu-garden" aria-hidden="true"></span><span>人脈ガーデン</span></button>
+    <button class="tab" data-view="analytics"><span aria-hidden="true">▥</span><span>分析</span></button>
+    <button class="tab" data-view="calendar" id="tab-cal"><span class="menu-icon menu-calendar" aria-hidden="true"></span><span>カレンダー</span></button>
+    <button class="tab" data-view="events" id="tab-events"><span class="menu-icon menu-events" aria-hidden="true"></span><span>今後のイベント</span></button>
+  </div>
+</nav>
+<main class="content">
+<div style="font-size:12px;color:#677487;margin-bottom:12px" role="status"><span id="contact-sync-status"></span> <button type="button" class="btn" id="contact-sync-retry" hidden>再取得</button></div>
+<div class="toolbar">
+  <input id="search" type="search" aria-label="人脈を検索" placeholder="名前・仕事・出会い・メモなどで検索…">
+  <select class="btn" id="sort" aria-label="並べ替え">
+    <option value="">並べ替え：カテゴリ順</option>
+    <option value="action">アクション日が近い順</option>
+    <option value="next">次会う日が近い順</option>
+  </select>
+  <button class="btn" type="button" id="bulk-start">まとめて編集</button>
+</div>
+<div class="catfilter" id="catfilter">
+  <span class="cf-label">表示カテゴリ</span>
+  <label class="cf cf-A"><input type="checkbox" value="A" checked>A</label>
+  <label class="cf cf-B"><input type="checkbox" value="B" checked>B</label>
+  <label class="cf cf-C"><input type="checkbox" value="C" checked>C</label>
+  <label class="cf cf-D"><input type="checkbox" value="D" checked>D</label>
+</div>
+<!-- リストとガーデンで共用する。#listwrap の中に置くとガーデン表示で親ごと隠れる。 -->
+<div id="bulk-bar" hidden>
+  <span id="bulk-count">0 人を選択中</span>
+  <button class="btn" type="button" id="bulk-open" disabled>選んだ人を編集</button>
+  <button class="btn" type="button" id="bulk-cancel">やめる</button>
+</div>
+<div id="todaywrap">
+  <div id="todaystatus" class="today-status"></div>
+  <div id="today-dashboard" class="today-dashboard"></div>
+</div>
+<div id="analyticswrap"></div>
+<div id="events"></div>
+<div id="gardenwrap">
+  <div id="gdpanel"></div>
+  <div class="gd-sky">
+    <div class="gd-stats" id="gdstats"></div>
+    <div id="gdmeet"></div>
+    <div id="gdcall"></div>
+    <div class="garden" id="garden"></div>
+    <div class="gd-cat-legend">
+      <span><span class="garden-icon icon-A" aria-hidden="true"></span> A＝手のかかる花（14日周期）</span>
+      <span><span class="garden-icon icon-B" aria-hidden="true"></span> B＝つぼみ（30日）</span>
+      <span><span class="garden-icon icon-C" aria-hidden="true"></span> C＝季節の花（90日）</span>
+      <span><span class="garden-icon icon-D" aria-hidden="true"></span> D＝野草（120日）</span>
+    </div>
+  </div>
+</div>
+<div id="listwrap"><div id="app"></div></div>
+<div id="calwrap">
+  <iframe id="calframe" class="cal-frame" src="https://calendar.google.com/calendar/embed?src=ryuhei.otsuka%40gmail.com&amp;ctz=Asia%2FTokyo&amp;mode=WEEK&amp;wkst=2&amp;hl=ja&amp;showTitle=0" title="Googleカレンダー" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  <div class="cal-note">※ 自分（Googleアカウント）でログインしている端末でだけ予定が表示されます。ログアウト中や別アカウント・他の人には空に見えます。</div>
+  <div id="slots"></div>
+</div>
+<footer id="foot"></footer>
+</main>
+</div>
+<script src="data.js"></script>
+<script data-comlist="storage" src="js/storage.js"></script>
+<script data-comlist="config" src="js/config.js"></script>
+<script data-comlist="api" src="js/api.js"></script>
+<script data-comlist="contacts" src="js/contacts.js"></script>
+<script data-comlist="events" src="js/events.js"></script>
+<script data-comlist="analytics" src="js/analytics.js"></script>
+<script data-comlist="tasks" src="js/tasks.js"></script>
+<script data-comlist="app" src="js/app.js"></script>
+</body>
+</html>

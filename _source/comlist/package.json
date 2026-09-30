@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:browser": "node tools/test_browser.cjs"
+  },
+  "dependencies": {
+    "googleapis": "181.0.0",
+    "jsdom": "^30.0.1"
+  }
+}
