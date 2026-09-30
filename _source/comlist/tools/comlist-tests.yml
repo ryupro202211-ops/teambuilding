@@ -1,0 +1,41 @@
+name: Comlist tests
+on:
+  pull_request:
+    paths: ['comlist.html', 'assets/comlist/**', '_source/comlist/**', '.github/workflows/comlist-tests.yml']
+  push:
+    branches: [main]
+    paths: ['comlist.html', 'assets/comlist/**', '_source/comlist/**', '.github/workflows/comlist-tests.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: _source/comlist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: _source/comlist/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - name: Verify published dependencies
+        run: node tools/publish_bundle.js --verify ../../comlist.html
+      - name: Install isolated browser test runtime
+        shell: pwsh
+        run: |
+          npm install --prefix "$env:RUNNER_TEMP/comlist-browser" --no-save playwright@1.62.1
+          & "$env:RUNNER_TEMP/comlist-browser/node_modules/.bin/playwright.cmd" install chromium
+      - name: Run fixture browser tests
+        shell: pwsh
+        run: |
+          $env:CODEX_NODE_MODULES = "$env:RUNNER_TEMP/comlist-browser/node_modules"
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: comlist-fixture-browser-results
+          path: _source/comlist/_preview/browser-e2e/*.png

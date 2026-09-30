@@ -1,2 +1,3 @@
 index.html -text
 comlist.html -text
+assets/comlist/* -text
