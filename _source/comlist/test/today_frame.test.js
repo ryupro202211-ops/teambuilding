@@ -41,6 +41,25 @@ test('renders daily tasks natively and opens only valid Notion URLs in a new tab
   assert.equal(doc.querySelectorAll('#today-dashboard h2 .brief-icon').length,9);
 });
 
+test('先回り準備は明日から3日後までの期限だけを表示する',t=>{
+  const w=loadApp(t).window;
+  w.DAILY_TASKS={date:'2026-10-01',tasks:[
+    {id:'tomorrow',type:'notion',section:'upcoming',title:'明日期限',due:'2026-10-02'},
+    {id:'third',type:'notion',section:'upcoming',title:'3日後期限',due:'2026-10-04'},
+    {id:'fourth',type:'notion',section:'upcoming',title:'4日後期限',due:'2026-10-05'},
+    {id:'none',type:'notion',section:'upcoming',title:'期限未設定'},
+    {id:'today',type:'notion',section:'today',title:'今日期限',due:'2026-10-01'}
+  ]};
+  w.renderTodayTasks();
+  const section=w.document.querySelector('[data-section="upcoming"]');
+  assert.match(section.querySelector('h2').textContent,/3日先まで/);
+  assert.deepEqual([...section.querySelectorAll('.today-task')].map(x=>x.dataset.taskId),['tomorrow','third']);
+  assert.equal(w.document.querySelector('[data-section="today"] .today-task').dataset.taskId,'today');
+  assert.equal(w.nextActionTask({}).id,'today');
+  assert.equal(w.nextActionTask({today:true}).id,'tomorrow');
+  assert.equal(w.nextActionTask({today:true,tomorrow:true,third:true}),null);
+});
+
 function fullBrief(){
   return {
     date:'2026-09-16', quote:{text:'格言',source:'出典'}, comment:'最初に期限切れを片づける。',
@@ -52,7 +71,7 @@ function fullBrief(){
       {id:'t-1',type:'notion',section:'todo',priority:'high',title:'今日やる'},
       {id:'t-mid',type:'notion',section:'todo',priority:'medium',title:'中'},
       {id:'d-1',type:'notion',section:'today',title:'本日期限'},
-      {id:'u-1',type:'calendar',section:'upcoming',title:'先回り'},
+      {id:'u-1',type:'calendar',section:'upcoming',title:'先回り',due:'2026-09-17'},
       {id:'o-1',type:'notion',section:'other',title:'期限なし'},
       {id:'contact',type:'contact',section:'selfOverdue',title:'非表示の連絡先',overdueDays:99}
     ],
@@ -79,7 +98,7 @@ test('renders all ten sections in order with each task in its section once',t=>{
   w.renderTodayTasks();
   const doc=w.document;
   const headings=[...doc.querySelectorAll('#today-dashboard h2')];
-  assert.deepEqual(headings.map(x=>x.textContent.trim()),['今日の標的','今日の格言','自分の期限切れ','メンバーの期限切れ','今日のToDo','今日中の期限タスク','明日以降の先回り準備','その他ToDo','参謀コメント','情報ソース']);
+  assert.deepEqual(headings.map(x=>x.textContent.trim()),['今日の標的','今日の格言','自分の期限切れ','メンバーの期限切れ','今日のToDo','今日中の期限タスク','3日先までの先回り準備','その他ToDo','参謀コメント','情報ソース']);
   assert.deepEqual(headings.map(x=>[...x.querySelector('.brief-icon').classList].find(c=>/^bi-/.test(c))),['bi-21','bi-0','bi-2','bi-1','bi-23','bi-4','bi-6','bi-7','bi-8','bi-9']);
   for(const task of w.DAILY_TASKS.tasks.filter(x=>x.type!=='contact')){
     const rows=doc.querySelectorAll('.today-task[data-task-id="'+task.id+'"]');

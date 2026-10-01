@@ -33,6 +33,18 @@ function briefText(value){
 function tasksIn(section){
   return todayData().tasks.filter(function(task){ return isLocalTask(task) && (task.section || "other") === section; });
 }
+function upcomingSoon(){
+  var date = todayData().date;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return [];
+  var today = Date.parse(date + "T00:00:00Z");
+  if(!Number.isFinite(today)) return [];
+  return tasksIn("upcoming").filter(function(task){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(task.due || "")) return false;
+    var due = Date.parse(task.due + "T00:00:00Z");
+    var days = (due - today) / 86400000;
+    return Number.isInteger(days) && days >= 1 && days <= 3;
+  });
+}
 function nextActionTask(saved){
   var unfinished = function(section){ return tasksIn(section).filter(function(task){ return saved[String(task.id || "")] !== true; }); };
   var byOverdue = function(a, b){ return (Number(b.overdueDays) || 0) - (Number(a.overdueDays) || 0); };
@@ -41,7 +53,7 @@ function nextActionTask(saved){
     unfinished("today"),
     unfinished("todo").sort(function(a,b){ return priorityIndex(a.priority) - priorityIndex(b.priority); }),
     unfinished("memberOverdue").sort(byOverdue),
-    unfinished("upcoming"),
+    upcomingSoon().filter(function(task){ return saved[String(task.id || "")] !== true; }),
     unfinished("other")
   ];
   return groups.find(function(group){ return group.length; })?.[0] || null;
@@ -49,7 +61,7 @@ function nextActionTask(saved){
 function nextActionHTML(saved){
   var task = nextActionTask(saved);
   if(!task) return '<div><div class="today-next-label">次にやること</div><div class="today-next-title">今日の対象はありません。</div></div>';
-  var section = { selfOverdue:"自分の期限切れ", today:"今日中の期限", todo:"今日のToDo", memberOverdue:"メンバーの期限切れ", upcoming:"明日以降の準備", other:"その他ToDo" }[task.section || "other"] || "今日のタスク";
+  var section = { selfOverdue:"自分の期限切れ", today:"今日中の期限", todo:"今日のToDo", memberOverdue:"メンバーの期限切れ", upcoming:"3日先までの準備", other:"その他ToDo" }[task.section || "other"] || "今日のタスク";
   return '<div><div class="today-next-label">次にやること</div><div class="today-next-title">' + briefText(task.title || "") + '</div>'
     + '<div class="today-next-note">' + esc(section) + '</div></div>'
     + '<button type="button" class="btn" data-next-task="' + esc(String(task.id || "")) + '">タスクを見る</button>';
@@ -274,7 +286,7 @@ function renderTodayTasks(){
       + '</div>' + taskRows(members, saved), "today-member")
     + briefSection("todo", "今日のToDo", 23, taskRows(todo, saved) + schedule + meetPrepHTML())
     + briefSection("today", "今日中の期限タスク", 4, taskRows(tasksIn("today"), saved))
-    + briefSection("upcoming", "明日以降の先回り準備", 6, taskRows(tasksIn("upcoming"), saved))
+    + briefSection("upcoming", "3日先までの先回り準備", 6, taskRows(upcomingSoon(), saved))
     + briefSection("other", "その他ToDo", 7, taskRows(tasksIn("other"), saved))
     + briefSection("comment", "参謀コメント", 8, '<div class="today-comment">' + briefText(daily.comment || "コメントはまだありません。") + '</div>')
     + briefSection("sources", "情報ソース", 9, sourceRows(daily.sources));
