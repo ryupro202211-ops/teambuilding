@@ -386,6 +386,7 @@ function gateHtml(ENC, dateStr) {
     + '      var payload=JSON.parse(new TextDecoder().decode(pt));\n'
     + '      DATA=payload.contacts;\n'
     + '      DAILY_TASKS=payload.dailyTasks;\n'
+    + '      window.FIELD_PROGRESS=payload.fieldProgress||null;\n'
     + '      window.PASSPHRASE=pass;\n'
     + '      if(typeof initializeSavedState === \"function\") await initializeSavedState(pass,DAILY_TASKS.date);\n'  // 「今日のタスク」が朝ブリーフを復号するのに使う。メモリ上だけで保持する
     + '      if(typeof saved!=="string"&&document.getElementById("lockremember").checked)remember(pass);\n'
@@ -432,7 +433,7 @@ async function fullBuild() {
       throw new Error("既存データに連絡先または日次タスクがありません。通常ビルドを実行してください。");
     }
     retained = {
-      contacts: payload.contacts, dailyTasks: payload.dailyTasks,
+      contacts: payload.contacts, dailyTasks: payload.dailyTasks, fieldProgress: payload.fieldProgress,
       events: JSON.parse(events[1]), slots: JSON.parse(slots[1]),
       date: date[1] + "-" + date[2].padStart(2, "0") + "-" + date[3].padStart(2, "0")
     };
@@ -555,6 +556,13 @@ async function fullBuild() {
   }
   const freeSlots = retained ? retained.slots : computeSlots(calendar, TODAY, NOWHM);
   const payload = { contacts, dailyTasks };
+  const fieldSource = ARGS["field-progress"] || (!retained && fs.existsSync("_work/field_progress.json") ? "_work/field_progress.json" : null);
+  const previousField = retained ? retained.fieldProgress : prevPayload && prevPayload.fieldProgress;
+  if (fieldSource) {
+    payload.fieldProgress = require("./field_progress").validateFieldProgress(JSON.parse(fs.readFileSync(fieldSource, "utf8")));
+  } else if (previousField) {
+    payload.fieldProgress = require("./field_progress").validateFieldProgress(previousField);
+  }
   const { ENC } = await encryptPayload(payload, pass);
 
   let html = require("./app_sources").readApp(masterPath);
