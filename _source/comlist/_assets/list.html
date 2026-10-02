@@ -62,6 +62,8 @@
 </nav>
 <main class="content">
 <div style="font-size:12px;color:#677487;margin-bottom:12px" role="status"><span id="contact-sync-status"></span> <button type="button" class="btn" id="contact-sync-retry" hidden>再取得</button></div>
+<div class="sync-bar" id="contact-action-bar" role="status" hidden><span id="contact-action-status"></span> <button type="button" class="btn" id="contact-action-retry" hidden>記録を再試行</button> <button type="button" class="btn" id="contact-action-cancel" hidden>記録案を取消して再取得</button></div>
+<div id="contact-write-status" class="sync-bar" role="status"></div>
 <div class="toolbar">
   <input id="search" type="search" aria-label="人脈を検索" placeholder="名前・仕事・出会い・メモなどで検索…">
   <select class="btn" id="sort" aria-label="並べ替え">
@@ -86,6 +88,7 @@
 </div>
 <div id="todaywrap">
   <div id="todaystatus" class="today-status"></div>
+  <div class="sync-bar" role="status"><span id="task-sync-status"></span> <button type="button" class="btn" id="task-sync-retry" hidden>再試行</button></div>
   <div id="today-dashboard" class="today-dashboard"></div>
 </div>
 <div id="analyticswrap"></div>
@@ -94,6 +97,7 @@
   <div id="gdpanel"></div>
   <div class="gd-sky">
     <div class="gd-stats" id="gdstats"></div>
+    <section class="contact-suggestions" id="gd-contact-suggestions" aria-label="今日連絡する3人"></section>
     <div id="gdmeet"></div>
     <div id="gdcall"></div>
     <div class="garden" id="garden"></div>
@@ -119,6 +123,7 @@
 <script data-comlist="config" src="js/config.js"></script>
 <script data-comlist="api" src="js/api.js"></script>
 <script data-comlist="contacts" src="js/contacts.js"></script>
+<script data-comlist="contact-actions" src="js/contact-actions.js"></script>
 <script data-comlist="events" src="js/events.js"></script>
 <script data-comlist="analytics" src="js/analytics.js"></script>
 <script data-comlist="tasks" src="js/tasks.js"></script>

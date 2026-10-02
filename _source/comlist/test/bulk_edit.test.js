@@ -37,7 +37,10 @@ function api(people){
     Session:{getScriptTimeZone:()=>'Asia/Tokyo'}
   });
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../sheet-api.gs'),'utf8'),ctx);
-  return {rows,lockCount:()=>lockCount,post:b=>ctx.doPost({postData:{contents:JSON.stringify(b)}})};
+  return {rows,lockCount:()=>lockCount,post:b=>{
+    if(Array.isArray(b.items))b={...b,items:b.items.map(it=>{const p=ctx.readContacts_().find(p=>p['名前(あだ名)']===it?.name);return {...it,version:it?.version||p?._version};})};
+    return ctx.doPost({postData:{contents:JSON.stringify(b)}});
+  }};
 }
 const bulk=(items,extra)=>Object.assign({token:'test-token',action:'bulk',requestId:'bulk-request-1234567890',items:items},extra||{});
 
@@ -148,7 +151,7 @@ const PEOPLE=[
 ];
 function ui(t,people){
   const src=require("../app_sources").readApp(path.join(__dirname,'../_assets/list.html'))
-    .replace('<script src="data.js"></script>','<script>let DATA='+JSON.stringify(people||PEOPLE)+';</script>');
+    .replace('<script src="data.js"></script>','<script>let DATA='+JSON.stringify((people||PEOPLE).map(p=>({...p,_version:'fixture-version'})))+';</script>');
   const d=new JSDOM(src,{runScripts:'dangerously',url:'http://localhost'});
   const w=d.window;t.after(()=>w.close());
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
@@ -227,7 +230,7 @@ test('saving sends a single request carrying every picked person',async t=>{
   assert.equal(body.action,'bulk');
   assert.equal(body.token,'test-token');
   assert.equal(body.items.length,3);
-  assert.deepEqual(body.items[0],{row:2,name:'あいこ',
+  assert.deepEqual(body.items[0],{row:2,name:'あいこ',version:'fixture-version',
     values:{'アクション日':'9/11','アクション内容':'','次会う日':'8/20','次会う日にする事':'サシ'}});
 });
 

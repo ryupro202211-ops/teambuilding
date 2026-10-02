@@ -21,3 +21,10 @@ test('bundle writes hashed dependencies and original image bytes before switchin
 test('dependency write failure preserves the previous HTML',t=>{
   const {writeBundle}=require('../artifact_bundle');const dir=fs.mkdtempSync(path.join(os.tmpdir(),'comlist-failure-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const out=path.join(dir,'comlist.html');fs.writeFileSync(out,'previous');const failing=Object.create(fs);failing.writeFileSync=()=>{throw Error('disk full')};assert.throws(()=>writeBundle(out,'<script data-comlist="app">1</script>',path.resolve('_assets'),failing),/disk full/);assert.equal(fs.readFileSync(out,'utf8'),'previous');
 });
+test('text assets have consistent line endings and one final newline while encrypted payload bytes are untouched',t=>{
+  const {writeBundle,verifyBundle}=require('../artifact_bundle');const dir=fs.mkdtempSync(path.join(os.tmpdir(),'comlist-text-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const out=path.join(dir,'comlist.html');
+  const payload='let DATA = [];\nlet DAILY_TASKS = [];\nconst ENC = {"ct":"fixture"};';
+  writeBundle(out,'<html><head>\r\n<style data-comlist="comlist">.x{}\r\n\r\n</style></head><body><script data-comlist="lock">'+payload+'\r\nvar unlocked=0;\r\n\r\n</script><script data-comlist="app">var app=1;\r\n\r\n</script></body></html>',path.resolve('_assets'));
+  for(const f of verifyBundle(out).files){const text=fs.readFileSync(path.join(dir,f.path),'utf8');if(f.path.includes('/payload.'))assert.equal(text,payload);else{assert.ok(!text.includes('\r'));assert.ok(text.endsWith('\n')&&!text.endsWith('\n\n'));}}
+  assert.ok(!fs.readFileSync(out,'utf8').includes('\r'));
+});

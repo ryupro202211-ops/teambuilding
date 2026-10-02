@@ -27,7 +27,7 @@ function api(seed){
     ContentService:{MimeType:{JSON:'json'},createTextOutput:s=>({setMimeType:()=>JSON.parse(s)})}
   });
   vm.runInContext(fs.readFileSync(path.join(__dirname,'../sheet-api.gs'),'utf8'),ctx);
-  return {rows,post:b=>ctx.doPost({postData:{contents:JSON.stringify(b)}}),getWaitLockCalls:()=>waitLockCalls};
+  return {rows,post:b=>{const p=ctx.readContacts_().find(p=>p['名前(あだ名)']===b.name);return ctx.doPost({postData:{contents:JSON.stringify({...b,version:b.version||p?._version})}});},getWaitLockCalls:()=>waitLockCalls};
 }
 
 function row(category,name,actionDate='',history=''){

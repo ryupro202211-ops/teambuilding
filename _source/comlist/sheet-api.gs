@@ -66,6 +66,80 @@ var MATERIAL_SNAPSHOT_DAYS = 32; // 今日 + 31日先まで（終了日は含め
 // 履歴に追記するときの区切り文字。詰まって見えるなら ' / ' などに変更する。
 var HISTORY_SEP = ' ';
 
+// Existing A:Z columns remain intact. AA:AC are explicitly set up by the owner.
+var CONTACT_TRACKING_HEADERS = ['連絡記録状態', '連絡記録日', '連絡記録リクエスト'];
+function contactTrackingReady_(sh) {
+  if(sh.getMaxColumns&&sh.getMaxColumns()<29)return false;
+  var headers=sh.getRange(1,27,1,3).getValues()[0];
+  return CONTACT_TRACKING_HEADERS.every(function(h,i){return cellText_(headers[i])===h;});
+}
+function setupContactTrackingSheet() {
+  return withMaterialLock_(function(){
+    var sh=getSheet_();if(sh.getMaxColumns&&sh.getMaxColumns()<29)sh.insertColumnsAfter(sh.getMaxColumns(),29-sh.getMaxColumns());
+    var headers=sh.getRange(1,27,1,3).getValues()[0];
+    if(headers.some(function(v,i){return cellText_(v)&&cellText_(v)!==CONTACT_TRACKING_HEADERS[i];}))throw Error('AA:ACには既存データがあります。列を確認してください。');
+    if(!contactTrackingReady_(sh)){
+      var n=sh.getLastRow()-1;
+      if(n>0&&sh.getRange(2,27,n,3).getValues().some(function(r){return r.some(function(v){return cellText_(v)!=='';});}))throw Error('AA:ACには既存データがあります。設定を中止しました。');
+      sh.getRange(1,27,1,3).setValues([CONTACT_TRACKING_HEADERS]);SpreadsheetApp.flush();
+    }
+    return {ok:true,columns:'AA:AC'};
+  });
+}
+function contactVersion_(sh,row) {
+  return contactVersionFromCells_(sh.getRange(row,1,1,COLUMNS.length).getValues()[0],contactTrackingReady_(sh)?sh.getRange(row,27,1,3).getValues()[0]:null);
+}
+function contactVersionFromCells_(row,meta) {
+  var cells=row.map(cellText_);
+  cells[13]=''; // Formula-derived current age does not represent a manual edit.
+  if(meta)cells=cells.concat(meta.map(cellText_));
+  // Exact content version: also detects direct sheet edits without a trigger or counter column.
+  return 'contact-v1:'+JSON.stringify(cells);
+}
+function checkContactVersion_(sh,row,body){
+  if(typeof body.version!=='string'||!body.version)return {ok:false,error:'version required',message:'最新データを再取得してください。'};
+  if(body.version!==contactVersion_(sh,row))return {ok:false,error:'conflict',message:'ほかの端末またはシートで更新されています。入力を控えて最新データを再取得してください。'};
+  return null;
+}
+function contactState_(sh,row){
+  if(!contactTrackingReady_(sh))return null;
+  var v=sh.getRange(row,27,1,3).getValues()[0].map(cellText_);
+  return /^(contacted|waiting|planning)$/.test(v[0])?{status:v[0],date:v[1]}:null;
+}
+function readContactRecord_(sh,row){
+  var cells=sh.getRange(row,1,1,COLUMNS.length).getValues()[0],meta=contactTrackingReady_(sh)?sh.getRange(row,27,1,3).getValues()[0]:null;
+  var record={_row:row,_version:contactVersionFromCells_(cells,meta)};
+  COLUMNS.forEach(function(k,i){var v=cellText_(cells[i]);if(v)record[k]=v;});
+  if(meta&&/^(contacted|waiting|planning)$/.test(cellText_(meta[0])))record._contactState={status:cellText_(meta[0]),date:cellText_(meta[1])};
+  return record;
+}
+function contactActionRecord_(body,row){
+  var sh=getSheet_();
+  if(!contactTrackingReady_(sh))return {ok:false,error:'tracking not ready',message:'GAS所有者による連絡記録列（AA:AC）の設定が必要です。'};
+  if(!/^(contacted|waiting|planning)$/.test(body.status)||!eventDateIsValid_(body.date)||!/^[a-zA-Z0-9-]{16,80}$/.test(body.requestId))return {ok:false,error:'invalid input'};
+  var name=String(body.name||'').trim();if(!name)return {ok:false,error:'invalid input'};
+  if(cellText_(sh.getRange(row,NAME_COL).getValue())!==name){var matches=findRowsByName_(sh,name);if(matches.length!==1)return {ok:false,error:matches.length?'ambiguous name':'name not found'};row=matches[0];}
+  var receiptText=cellText_(sh.getRange(row,29).getValue()),receipt;
+  try{receipt=JSON.parse(receiptText);}catch(e){receipt=null;}
+  // The durable last receipt survives a lost response; do not replay any changes.
+  if(receipt&&receipt.id===body.requestId){
+    if(receipt.status!==body.status||receipt.date!==body.date)return {ok:false,error:'request mismatch'};
+    var current=readContactRecord_(sh,row);
+    return {ok:true,row:row,version:current._version,updated:{},contactState:current._contactState,record:current,replayed:true};
+  }
+  var conflict=checkContactVersion_(sh,row,body);if(conflict)return conflict;
+  var updated={},cat=cellText_(sh.getRange(row,1).getValue());if(CONFIG.CATEGORIES.indexOf(cat)<0)return {ok:false,error:'invalid category'};
+  if(body.status==='contacted'){
+    var d=new Date(body.date+'T00:00:00Z'),entry=d.getUTCFullYear()+'/'+(d.getUTCMonth()+1)+'/'+d.getUTCDate()+' 連絡';
+    var history=cellText_(sh.getRange(row,HISTORY_COL).getValue());updated['履歴']=history?history+HISTORY_SEP+entry:entry;setCell_(sh,row,HISTORY_COL,updated['履歴']);
+    var old=normDate_(sh.getRange(row,EDITABLE['アクション日']).getValue());
+    var parts=old.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/),oldIso=parts?parts[1]+'-'+('0'+parts[2]).slice(-2)+'-'+('0'+parts[3]).slice(-2):null;
+    if(!old||(oldIso&&oldIso<=body.date)){d.setUTCDate(d.getUTCDate()+CONTACT_CYCLE[cat]);updated['アクション日']=d.getUTCFullYear()+'/'+(d.getUTCMonth()+1)+'/'+d.getUTCDate();setCell_(sh,row,EDITABLE['アクション日'],updated['アクション日']);}
+  }
+  sh.getRange(row,27,1,3).setValues([[body.status,body.date,JSON.stringify({id:body.requestId,status:body.status,date:body.date})]]);SpreadsheetApp.flush();
+  return {ok:true,row:row,version:contactVersion_(sh,row),updated:updated,contactState:contactState_(sh,row)};
+}
+
 // ---------- 共通 ----------
 
 function getToken_() {
@@ -245,6 +319,7 @@ function doPost(e) {
       if (body.action === 'create') return createRecord_(body);
       if (body.action === 'bulk') return json_(bulkWrite_(body));
       if (body.action === 'contacted') return json_(contactedRecord_(body, row));
+      if (body.action === 'contactAction') return json_(contactActionRecord_(body, row));
       return json_(writeRecord_(body, row));
     } finally {
       lock.releaseLock();
@@ -286,6 +361,7 @@ function contactedRecord_(body, row) {
   }
 
   var entry = month + '/' + day + ' 連絡';
+  var conflict=checkContactVersion_(sh,row,body);if(conflict)return conflict;
   var history = cellText_(sh.getRange(row, HISTORY_COL).getValue());
   var escaped = entry.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   var completeEntry = new RegExp('(?:^| )' + escaped + '(?=$| \\d{1,2}/\\d{1,2} )');
@@ -298,7 +374,7 @@ function contactedRecord_(body, row) {
   next.setUTCDate(next.getUTCDate() + CONTACT_CYCLE[category]);
   var actionDate = (next.getUTCMonth() + 1) + '/' + next.getUTCDate();
   setCell_(sh, row, EDITABLE['アクション日'], actionDate);
-  return { ok: true, row: row, name: actual, updated: { '履歴': history, 'アクション日': actionDate } };
+  return { ok: true, row: row, name: actual, version:contactVersion_(sh,row), updated: { '履歴': history, 'アクション日': actionDate } };
 }
 
 /** 1件分の書き戻し。doPost からロックの内側で呼ばれる。 */
@@ -316,7 +392,7 @@ function createRecord_(body) {
   for (var n = 0; n < names.length; n++) {
     if (names[n][0] === 'garden-create:' + id) {
       var saved = sh.getRange(n+2, 1, 1, COLUMNS.length).getValues()[0];
-      var record = {_row:n+2};
+      var record = {_row:n+2,_version:contactVersion_(sh,n+2)};
       COLUMNS.forEach(function(k,i){ if(cellText_(saved[i])) record[k]=cellText_(saved[i]); });
       return json_({ok:true, record:record, replayed:true});
     }
@@ -334,7 +410,7 @@ function createRecord_(body) {
   sh.getRange(row, 1, 1, COLUMNS.length).setValues([rowValues]);
   sh.getRange(row, NAME_COL).setNote('garden-create:' + id);
   SpreadsheetApp.flush();
-  var out = {_row:row};
+  var out = {_row:row,_version:contactVersion_(sh,row)};
   sh.getRange(row,1,1,COLUMNS.length).getValues()[0].forEach(function(v,i){ if(cellText_(v)) out[COLUMNS[i]]=cellText_(v); });
   return json_({ok:true, record:out});
 }
@@ -370,6 +446,7 @@ function writeRecord_(body, row) {
       }
     }
 
+    var conflict=checkContactVersion_(sh,row,body);if(conflict)return conflict;
     var values = body.values || {};
     var updated = {};
 
@@ -409,7 +486,8 @@ function writeRecord_(body, row) {
       updated[key] = val;
     });
 
-    return ({ ok: true, row: row, name: actual, updated: updated });
+    SpreadsheetApp.flush();
+    return ({ ok: true, row: row, name: actual, version:contactVersion_(sh,row), updated: updated });
 }
 
 /**
@@ -479,11 +557,13 @@ function readContacts_() {
   var last = sh.getLastRow();
   if (last < 2) return [];
   var values = sh.getRange(2, 1, last - 1, COLUMNS.length).getValues();
+  var tracking=contactTrackingReady_(sh),meta=tracking?sh.getRange(2,27,last-1,3).getValues():[];
   var records = [];
   values.forEach(function (row, i) {
     var cat = cellText_(row[0]);
     if (CONFIG.CATEGORIES.indexOf(cat) === -1) return;
-    var o = { _row: i + 2 };
+    var o = { _row: i + 2, _version:contactVersionFromCells_(row,tracking?meta[i]:null) };
+    if(tracking&&/^(contacted|waiting|planning)$/.test(cellText_(meta[i][0])))o._contactState={status:cellText_(meta[i][0]),date:cellText_(meta[i][1])};
     for (var c = 0; c < COLUMNS.length; c++) {
       var v = cellText_(row[c]);
       if (v) o[COLUMNS[c]] = v;

@@ -39,7 +39,7 @@ test('撃破が0件の日でも履歴があれば表示する',t=>{
   assert.match(w.document.getElementById('today-dashboard').textContent,/今週\s*2/);
 });
 
-test('3日以内に会う人を今日のToDoに準備として出す',t=>{
+test('3日以内に会う人を今日の予定に準備として出す',t=>{
   const w=loadApp(t).window;
   const today=new Date(); const iso=d=>{const x=new Date(today);x.setDate(x.getDate()+d);return x.getFullYear()+'/'+(x.getMonth()+1)+'/'+x.getDate();};
   w.eval('DATA='+JSON.stringify([
@@ -53,7 +53,7 @@ test('3日以内に会う人を今日のToDoに準備として出す',t=>{
   assert.equal(rows.length,1);
   assert.match(rows[0],/近いさん/);
   assert.match(rows[0],/サシ/);
-  assert.ok(w.document.querySelector('[data-section="todo"] .meet-prep-row'));
+  assert.ok(w.document.querySelector('[data-section="schedule"] .meet-prep-row'));
 });
 
 test('近く会う人に連絡先・前回の履歴・話題・カードを開くボタンを出す',t=>{
@@ -117,7 +117,7 @@ test('チェックを付け外しするとサーバーにも送る',async t=>{
   w.setLocalTaskDone('a',true);
   w.setLocalTaskDone('a',false);
   await new Promise(r=>setTimeout(r,0));
-  assert.deepEqual(calls.map(c=>[c.op,c.id,c.done]),[['set','a',true],['set','a',false]]);
+  assert.deepEqual(calls.map(c=>[c.op,c.id,c.done]),[['set','a',false]],'送信前の反復操作は最新の状態だけを送る');
 });
 
 test('合言葉が無い端末は通信しない',async t=>{

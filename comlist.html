@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="comlist-manifest" content="assets/comlist/manifest.01035af91b2e93954d38.json">
+<meta name="comlist-manifest" content="assets/comlist/manifest.55183ff805ae326c8b25.json">
 <meta charset="UTF-8">
-  <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイベストライフ</title>
-<link data-comlist="comlist" rel="stylesheet" href="assets/comlist/comlist.1170b0b030361595b884.css">
+<link data-comlist="comlist" rel="stylesheet" href="assets/comlist/comlist.b3f8f8d25f6be445c507.css">
 </head>
 <body>
 <header>
@@ -64,6 +63,8 @@
 </nav>
 <main class="content">
 <div style="font-size:12px;color:#677487;margin-bottom:12px" role="status"><span id="contact-sync-status"></span> <button type="button" class="btn" id="contact-sync-retry" hidden>再取得</button></div>
+<div class="sync-bar" id="contact-action-bar" role="status" hidden><span id="contact-action-status"></span> <button type="button" class="btn" id="contact-action-retry" hidden>記録を再試行</button> <button type="button" class="btn" id="contact-action-cancel" hidden>記録案を取消して再取得</button></div>
+<div id="contact-write-status" class="sync-bar" role="status"></div>
 <div class="toolbar">
   <input id="search" type="search" aria-label="人脈を検索" placeholder="名前・仕事・出会い・メモなどで検索…">
   <select class="btn" id="sort" aria-label="並べ替え">
@@ -88,6 +89,7 @@
 </div>
 <div id="todaywrap">
   <div id="todaystatus" class="today-status"></div>
+  <div class="sync-bar" role="status"><span id="task-sync-status"></span> <button type="button" class="btn" id="task-sync-retry" hidden>再試行</button></div>
   <div id="today-dashboard" class="today-dashboard"></div>
 </div>
 <div id="analyticswrap"></div>
@@ -96,6 +98,7 @@
   <div id="gdpanel"></div>
   <div class="gd-sky">
     <div class="gd-stats" id="gdstats"></div>
+    <section class="contact-suggestions" id="gd-contact-suggestions" aria-label="今日連絡する3人"></section>
     <div id="gdmeet"></div>
     <div id="gdcall"></div>
     <div class="garden" id="garden"></div>
@@ -119,13 +122,14 @@
 <div id="lockgate" style="position:fixed;inset:0;z-index:9999;background:#f2f7ee;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;font-family:sans-serif;"><div style="font-size:22px;margin-bottom:12px;"><span class="brief-icon bi-18" role="img" aria-label="ロック"></span> マイベストライフ</div><input id="lockpass" type="password" placeholder="パスフレーズ" style="padding:10px 12px;font-size:15px;border:1px solid #cdddc5;border-radius:8px;"><button id="lockbtn" style="margin-left:8px;padding:10px 16px;font-size:15px;border:0;border-radius:8px;background:#2f8f4e;color:#fff;font-weight:700;cursor:pointer;"><span class="brief-icon bi-20" aria-hidden="true"></span> ひらく</button><label style="display:block;margin-top:10px;font-size:13px;color:#5f6f58;"><input id="lockremember" type="checkbox"> この端末で30日間覚える</label><div id="lockerr" style="color:#c0392b;font-size:13px;margin-top:10px;min-height:18px;"></div><div style="color:#7a8a72;font-size:12px;margin-top:14px;">データ更新日: 2026/10/2</div></div></div>
 <script data-comlist="payload" src="assets/comlist/payload.9983202f4b9e00d68a0b.js"></script>
 <script data-comlist="lock" src="assets/comlist/lock.2d1d1b92a4ca1d266167.js"></script>
-<script data-comlist="storage" src="assets/comlist/storage.f1a4b73789762f3ea739.js"></script>
-<script data-comlist="config" src="assets/comlist/config.3c0eedc2b824b362ebdb.js"></script>
-<script data-comlist="api" src="assets/comlist/api.73841d5a632a1dbf2f0c.js"></script>
-<script data-comlist="contacts" src="assets/comlist/contacts.5a2412f2ec620dfc1490.js"></script>
-<script data-comlist="events" src="assets/comlist/events.5f61f554df06fe145482.js"></script>
-<script data-comlist="analytics" src="assets/comlist/analytics.2d00e6c32f6d6dd51f7b.js"></script>
-<script data-comlist="tasks" src="assets/comlist/tasks.c1ee6a82da3feeff796d.js"></script>
-<script data-comlist="app" src="assets/comlist/app.5f2884bde20e8dd6609b.js"></script>
+<script data-comlist="storage" src="assets/comlist/storage.b9a0fe44382ca79bd3c0.js"></script>
+<script data-comlist="config" src="assets/comlist/config.61498ce56695bdeae540.js"></script>
+<script data-comlist="api" src="assets/comlist/api.198911bf75aae430f1ff.js"></script>
+<script data-comlist="contacts" src="assets/comlist/contacts.c10dae6818e700950889.js"></script>
+<script data-comlist="contact-actions" src="assets/comlist/contact-actions.2c08d40a2906743b9c57.js"></script>
+<script data-comlist="events" src="assets/comlist/events.ff6b3ef8075988d830a1.js"></script>
+<script data-comlist="analytics" src="assets/comlist/analytics.075af2607136ddbd4711.js"></script>
+<script data-comlist="tasks" src="assets/comlist/tasks.e3a89649e7f89a45dd6c.js"></script>
+<script data-comlist="app" src="assets/comlist/app.4f1bd8d35d04744f361d.js"></script>
 </body>
 </html>

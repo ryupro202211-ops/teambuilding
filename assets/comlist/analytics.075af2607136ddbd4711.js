@@ -1,3 +1,4 @@
+
 function analysisTrendChart(log){
   var rows=log.filter(function(r){return /^\d{4}-\d{2}-\d{2}$/.test(r.date)&&Number.isInteger(r.overdue)&&r.overdue>=0;}).slice(-56);
   if(!rows.length)return '<p>推移は次の日次更新から記録します。</p>';

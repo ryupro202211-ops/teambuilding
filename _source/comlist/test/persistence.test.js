@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {webcrypto}=require('node:crypto');
 const {JSDOM}=require('jsdom');
-const initial=[{_row:2,'カテゴリー':'A','名前(あだ名)':'Fixture','アクション日':'2026/01/01'}];
+const initial=[{_row:2,_version:'fixture-version','カテゴリー':'A','名前(あだ名)':'Fixture','アクション日':'2026/01/01'}];
 function app(t,saved={}){
   const html=require("../app_sources").readApp('_assets/list.html').replace(/const EVENTS = \[[\s\S]*?\];/, 'const EVENTS = [];').replace('<script src="data.js"></script>','<script>let DATA='+JSON.stringify(initial)+';let DAILY_TASKS={date:"2026-01-01",tasks:[]};</script>');
   const d=new JSDOM(html,{runScripts:'dangerously',url:'https://fixture.test/comlist.html',beforeParse(w){Object.defineProperty(w,'crypto',{value:webcrypto});w.TextEncoder=TextEncoder;w.TextDecoder=TextDecoder;w.HTMLElement.prototype.scrollIntoView=function(){};for(const [k,v] of Object.entries(saved))w.localStorage.setItem(k,v);}});
@@ -77,5 +77,11 @@ test('a late refresh cannot replace the people held by an open bulk editor',asyn
   releaseRead({json:async()=>({ok:true,records:[{...initial[0]}]})});await refreshing;w.saveBulk();
   for(let i=0;i<50&&dialog.open;i++)await new Promise(r=>setTimeout(r,20));assert.equal(dialog.open,false);assert.equal(data(w)[0]['アクション内容'],'Bulk saved');
   const v=app(t,snapshot(w));await v.initializeSavedState('fixture-pass','2026-01-01');assert.equal(data(v)[0]['アクション内容'],'Bulk saved');
+});
+test('switching away during a schedule write still protects its object from a late refresh',async t=>{
+  const w=app(t);w.setWriteToken('fixture-token');w.eval('SELECTED=plantKey(DATA[0]);PANEL_EDIT_KEY=SELECTED;PANEL_EDIT=true;setView("garden")');w.document.getElementById('ge-ad').value='2026-01-03';let release;
+  w.fetch=(_u,o)=>JSON.parse(o.body).action==='read'?Promise.resolve({json:async()=>({ok:true,records:initial.map(p=>({...p}))})}):new Promise(r=>release=r);
+  w.eval('saveEdit(DATA[0]);PANEL_EDIT=false');await w.refreshRegisteredPeople();release({json:async()=>({ok:true,row:2,version:'new',updated:{'アクション日':'2026/01/03'}})});
+  await new Promise(r=>setImmediate(r));assert.equal(data(w)[0]['アクション日'],'2026/01/03');
 });
 

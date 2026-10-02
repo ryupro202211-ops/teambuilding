@@ -1,3 +1,4 @@
+
 'use strict';
 
 // Only authenticated, encrypted snapshots are persisted; the sheet remains authoritative.

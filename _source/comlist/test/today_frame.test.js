@@ -36,9 +36,9 @@ test('renders daily tasks natively and opens only valid Notion URLs in a new tab
   assert.match(doc.getElementById('today-dashboard').textContent,/Notionタスク/);
   assert.match(doc.getElementById('today-dashboard').textContent,/返信する/);
   assert.doesNotMatch(doc.getElementById('today-dashboard').textContent,/山田さん/);
-  assert.doesNotMatch(doc.getElementById('today-dashboard').textContent,/連絡する人/);
+  assert.match(doc.getElementById('today-dashboard').textContent,/連絡する人/);
   assert.ok(doc.querySelector('.today-hero'));
-  assert.equal(doc.querySelectorAll('#today-dashboard h2 .brief-icon').length,9);
+  assert.equal(doc.querySelectorAll('#today-dashboard h2 .brief-icon').length,12);
 });
 
 test('先回り準備は明日から3日後までの期限だけを表示する',t=>{
@@ -98,8 +98,8 @@ test('renders all ten sections in order with each task in its section once',t=>{
   w.renderTodayTasks();
   const doc=w.document;
   const headings=[...doc.querySelectorAll('#today-dashboard h2')];
-  assert.deepEqual(headings.map(x=>x.textContent.trim()),['今日の標的','今日の格言','自分の期限切れ','メンバーの期限切れ','今日のToDo','今日中の期限タスク','3日先までの先回り準備','その他ToDo','参謀コメント','情報ソース']);
-  assert.deepEqual(headings.map(x=>[...x.querySelector('.brief-icon').classList].find(c=>/^bi-/.test(c))),['bi-21','bi-0','bi-2','bi-1','bi-23','bi-4','bi-6','bi-7','bi-8','bi-9']);
+  assert.deepEqual(headings.map(x=>x.textContent.trim()),['今日中の期限タスク','今日の重要3件','今日の予定','連絡する人','今日の標的','今日の格言','自分の期限切れ','メンバーの期限切れ','今日のToDo','3日先までの先回り準備','その他ToDo','参謀コメント','情報ソース']);
+  assert.deepEqual(headings.map(x=>[...x.querySelector('.brief-icon').classList].find(c=>/^bi-/.test(c))),['bi-4','bi-23','bi-5','bi-8','bi-21','bi-0','bi-2','bi-1','bi-23','bi-6','bi-7','bi-8','bi-9']);
   for(const task of w.DAILY_TASKS.tasks.filter(x=>x.type!=='contact')){
     const rows=doc.querySelectorAll('.today-task[data-task-id="'+task.id+'"]');
     assert.equal(rows.length,1);
@@ -111,10 +111,10 @@ test('renders all ten sections in order with each task in its section once',t=>{
   assert.ok(doc.querySelector('[data-task-id="t-low"] .bi-17'));
   assert.match(doc.querySelector('.today-boss').textContent,/Lv\.9.*自分/);
   assert.equal(doc.querySelectorAll('.today-boss').length,1);
-  assert.match(doc.querySelector('[data-section="todo"]').textContent,/06:30.*朝会/);
+  assert.match(doc.querySelector('[data-section="schedule"]').textContent,/06:30.*朝会/);
   assert.match(doc.querySelector('[data-section="comment"]').textContent,/最初に期限切れ/);
   assert.match(doc.querySelector('[data-section="sources"]').textContent,/18.*18/);
-  assert.doesNotMatch(doc.querySelector('#today-dashboard').textContent,/非表示の連絡先|連絡する人|\p{Extended_Pictographic}/u);
+  assert.doesNotMatch(doc.querySelector('#today-dashboard').textContent,/非表示の連絡先|\p{Extended_Pictographic}/u);
 });
 
 for(const [days,index] of [[1,10],[2,10],[3,11],[4,11],[5,12],[6,12],[7,13],[8,13],[9,14],[14,14]]){
@@ -198,7 +198,7 @@ test('converts registered emoji and removes unsupported emoji from every dashboa
   assert.doesNotMatch(box.innerHTML,rawEmoji);
   assert.doesNotMatch(box.textContent,rawEmoji);
   for(const [selector,index] of [
-    ['.today-quote',0],['.today-quote-source',9],['[data-section="todo"] .today-task-detail',5],
+    ['.today-quote',0],['.today-quote-source',9],['[data-section="schedule"] .today-task-detail',5],
     ['.today-comment',8],['.today-hp-note',24],['.today-boss .today-task-title',1],
     ['.today-task[data-task-id="s-1"] .today-task-title',1],
     ['.today-task[data-task-id="s-1"] .today-task-detail',3]
@@ -301,7 +301,7 @@ test('shows yesterday の戦果 when overdue items disappeared, and names a targ
 
   const victory=doc.querySelector('[data-section="victory"]');
   assert.ok(victory.classList.contains('today-victory'));
-  assert.equal(doc.querySelector('#today-dashboard section:nth-of-type(2)'),victory);
+  assert.equal(victory.closest('details').open,false,'戦果は短い要約から詳細を開く');
   assert.equal(victory.querySelector('h2').textContent.trim(),'昨日からの戦果');
   assert.deepEqual([...victory.querySelectorAll('.victory-lv')].map(x=>x.textContent),['Lv.10 撃破','Lv.2 撃破']);
   assert.ok(victory.querySelector('.victory-row .victory-icon.vi-0'));

@@ -7,8 +7,8 @@ const {gateHtmlForTest,encryptForTest}=require('../build');
 const runtime=process.env.CODEX_NODE_MODULES||'C:/Users/ryupr/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules';
 const {chromium}=require(path.join(runtime,'playwright'));
 async function main(){
-  const day=new Date();day.setDate(day.getDate()+1);const date=day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
-  let contacts=[{_row:2,'カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','アクション日':date}];
+  const day=new Date();const date=day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
+  let contacts=[{_row:2,_version:'fixture-v1','カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','アクション日':date}];
   let events=[{id:'evt_browserfixture00000001',status:'公開',date,startTime:'19:00',endTime:'20:00',title:'テストイベント',version:1}];
   const daily={date,dayLabel:date,tasks:[{id:'notion:fixture',type:'notion',title:'テストタスク',section:'today',due:date,overdueDays:0}],sources:{}};
   const enc=await encryptForTest({contacts,dailyTasks:daily},'fixture-pass');
@@ -19,15 +19,22 @@ async function main(){
   let baseline=prepare(fs.existsSync(baselinePath)?fs.readFileSync(baselinePath,'utf8'):readApp(path.join(root,'_assets/list.html')));
   for(const file of fs.readdirSync(path.join(root,'_assets')).filter(f=>/^(?:garden-icons-v1|menu-icons-v1|brief-icons-v2|brief-hero-morning-v2|victory-icons-v1|victory-banner-v1)\.(png|jpg)$/.test(f)))baseline=baseline.replaceAll('url("'+file+'")','url("data:image/'+(file.endsWith('.png')?'png':'jpeg')+';base64,'+fs.readFileSync(path.join(root,'_assets',file)).toString('base64')+'")');
   fs.writeFileSync(path.join(target,'baseline.html'),baseline);
-  let offline=false,done={};
+  let offline=false,done={},serial=1,loseContactResponse=false,contactReceipts=new Map(),contactWrites=[];
   const server=http.createServer(async(req,res)=>{
     if(req.url==='/api'){
       let raw='';for await(const chunk of req)raw+=chunk;const body=JSON.parse(raw);let result;
       if(body.action==='read')result=offline?{ok:false,error:'offline'}:body.what==='contacts'?{ok:true,records:contacts}:{ok:true,events};
       else if(body.action==='taskState'){if(offline)result={ok:false};else{if(body.op==='set'){if(body.done)done[body.id]=true;else delete done[body.id];}result={ok:true,date:body.date,done};}}
-      else if(body.action==='create'){const record={_row:contacts.length+2,...body.values};contacts.push(record);result={ok:true,record};}
+      else if(body.action==='create'){const record={_row:contacts.length+2,_version:'fixture-v'+(++serial),...body.values};contacts.push(record);result={ok:true,record};}
       else if(body.action==='eventDelete'){events=events.filter(e=>e.id!==body.id);result={ok:true,deletedId:body.id};}
-      else {Object.assign(contacts.find(c=>c._row===body.row),body.values);result={ok:true,row:body.row,updated:body.values};}
+      else if(body.action==='contactAction'){
+        contactWrites.push(body);const p=contacts.find(c=>c._row===body.row);
+        if(offline)result={ok:false,error:'offline'};
+        else if(contactReceipts.has(body.requestId))result=contactReceipts.get(body.requestId);
+        else if(body.version!==p._version)result={ok:false,error:'conflict'};
+        else {const updated={};if(body.status==='contacted'){updated['履歴']=(p['履歴']||'')+' '+date+' 連絡';const next=new Date(date+'T00:00:00Z');next.setUTCDate(next.getUTCDate()+14);updated['アクション日']=next.toISOString().slice(0,10);Object.assign(p,updated);}p._contactState={status:body.status,date:body.date};p._version='fixture-v'+(++serial);result={ok:true,row:p._row,version:p._version,contactState:p._contactState,updated};contactReceipts.set(body.requestId,result);if(loseContactResponse){loseContactResponse=false;result={ok:false,error:'response lost'};}}
+      }
+      else {const p=contacts.find(c=>c._row===body.row);if(body.version!==p._version)result={ok:false,error:'conflict'};else{Object.assign(p,body.values);p._version='fixture-v'+(++serial);result={ok:true,row:body.row,version:p._version,updated:body.values};}}
       res.setHeader('Content-Type','application/json');res.end(JSON.stringify(result));return;
     }
     try{const url=new URL(req.url,'http://local'),rel=url.pathname==='/'?'comlist.html':decodeURIComponent(url.pathname.slice(1));const file=path.resolve(target,rel);if(!file.startsWith(target+path.sep))throw Error('path');const bytes=fs.readFileSync(file);res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':file.endsWith('.jpg')?'image/jpeg':'text/html');res.end(bytes);}catch(error){res.statusCode=404;res.end('not found');}
@@ -45,6 +52,7 @@ async function main(){
   try{
     await page.goto(base+'/baseline.html');await unlock();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'before.png'),fullPage:true});measurements.before=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
     await loaded();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'after.png'),fullPage:true});measurements.after=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
+    assert.deepEqual(await page.locator('#today-dashboard > [data-section]').evaluateAll(es=>es.slice(0,4).map(e=>e.dataset.section)),['today','important','schedule','contacts']);
     await page.locator('[data-view="garden"]').click();await page.locator('.plant').first().click();await page.locator('#ge-open').click();await page.locator('#ge-ad').fill(date);await page.locator('#ge-nw').fill('保存後も残る予定');await page.locator('#ge-save').click();await page.waitForFunction(()=>!PANEL_EDIT);await page.waitForFunction(()=>!!localStorage.getItem('comlist-cache:v1:/comlist.html'));
     offline=true;await page.reload();await unlock();await page.locator('[data-view="garden"]').click();assert.match(await page.locator('#app').textContent(),/保存後も残る予定/);
     // Close the page entirely and open another page in the same browser context.
@@ -56,9 +64,22 @@ async function main(){
     offline=true;await page.reload();await unlock();await page.locator('[data-view="events"]').click();assert.equal(await page.locator('.ev').count(),0);
     await page.locator('[data-view="today"]').click();await page.locator('.today-task-check').check();await page.reload();await unlock();assert.equal(await page.locator('.today-task-check').isChecked(),true);await page.locator('.today-task-check').uncheck();await page.reload();await unlock();assert.equal(await page.locator('.today-task-check').isChecked(),false);
     await page.close();const reopened=await context.newPage();await reopened.goto(base+'/comlist.html');await reopened.locator('#lockpass').fill('fixture-pass');await reopened.locator('#lockbtn').click();await reopened.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');assert.equal(await reopened.locator('.today-task-check').isChecked(),false);
+    // A real second browser context shares the mock server, never the local storage.
+    offline=false;const second=await browser.newContext({viewport:{width:390,height:844}});await second.route('https://**/*',r=>r.abort());await second.addInitScript(()=>localStorage.setItem('comunitylisttolevel9','fixture-token'));const mobile=await second.newPage();mobile.on('pageerror',e=>errors.push(e.message));
+    await mobile.goto(base+'/comlist.html');await mobile.locator('#lockpass').fill('fixture-pass');await mobile.locator('#lockbtn').click();await mobile.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');await mobile.waitForFunction(()=>document.getElementById('contact-sync-status').textContent.includes('最新データを表示'));
+    await reopened.locator('[data-view="garden"]').click();await reopened.evaluate(()=>refreshRegisteredPeople());await reopened.locator('.plant').first().click();await reopened.locator('#ge-open').click();await reopened.locator('#ge-nw').fill('競合でも残る入力');
+    await mobile.locator('[data-view="garden"]').click();await mobile.locator('.plant').first().click();await mobile.locator('#ge-open').click();await mobile.locator('#ge-nw').fill('別端末の予定');await mobile.locator('#ge-save').click();await mobile.waitForFunction(()=>!PANEL_EDIT);
+    await reopened.locator('#ge-save').click();await reopened.waitForFunction(()=>document.getElementById('ge-msg').textContent.includes('ほかの端末'));assert.equal(await reopened.locator('#ge-nw').inputValue(),'競合でも残る入力');assert.equal(contacts[0]['次会う日にする事'],'別端末の予定');await reopened.locator('#ge-cancel').click();await reopened.evaluate(()=>refreshRegisteredPeople());
+    const beforeContact=contactWrites.length;reopened.once('dialog',d=>d.dismiss());await reopened.locator('#gdpanel [data-contact-status="contacted"]').click();assert.equal(contactWrites.length,beforeContact);
+    loseContactResponse=true;reopened.once('dialog',d=>d.accept());await reopened.locator('#gdpanel [data-contact-status="waiting"]').click();await reopened.waitForFunction(()=>!CONTACT_ACTION_BUSY&&document.getElementById('contact-action-status').textContent.includes('同期失敗'));const requestId=contactWrites.at(-1).requestId;
+    offline=true;await reopened.reload();await reopened.locator('#lockpass').fill('fixture-pass');await reopened.locator('#lockbtn').click();await reopened.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');await reopened.locator('[data-view="garden"]').click();assert.equal(await reopened.locator('#contact-action-retry').isVisible(),true);
+    offline=false;await reopened.locator('#contact-action-retry').click();await reopened.waitForFunction(()=>!CONTACT_ACTION_PENDING&&!CONTACT_ACTION_BUSY);assert.equal(contactWrites.at(-1).requestId,requestId);assert.equal(contacts[0]._contactState.status,'waiting');await reopened.locator('.plant').first().click();
+    reopened.once('dialog',d=>d.accept());await reopened.locator('#gdpanel [data-contact-status="contacted"]').click();await reopened.waitForFunction(()=>!CONTACT_ACTION_BUSY);assert.equal((contacts[0]['履歴'].match(/連絡/g)||[]).length,1);
+    reopened.once('dialog',d=>d.accept());await reopened.locator('#gdpanel [data-contact-status="planning"]').click();await reopened.waitForFunction(()=>!CONTACT_ACTION_BUSY&&PANEL_EDIT);assert.equal(contacts[0]._contactState.status,'planning');const writesBeforeCancel=contactWrites.length;await reopened.locator('#ge-cancel').click();assert.equal(contactWrites.length,writesBeforeCancel);
+    await reopened.screenshot({path:path.join(target,'desktop-contact-actions.png'),fullPage:true});await mobile.evaluate(()=>refreshRegisteredPeople());await mobile.screenshot({path:path.join(target,'mobile-contact-actions.png'),fullPage:true});assert.ok(await mobile.locator('body').evaluate(e=>e.scrollWidth<=innerWidth));await mobile.locator('[data-view="today"]').click();assert.deepEqual(await mobile.locator('#today-dashboard > [data-section]').evaluateAll(es=>es.slice(0,4).map(e=>({section:e.dataset.section,collapsed:e.classList.contains('collapsed')}))),['today','important','schedule','contacts'].map(section=>({section,collapsed:false})));await mobile.screenshot({path:path.join(target,'mobile-home.png'),fullPage:true});await second.close();
     await reopened.evaluate(()=>localStorage.setItem('comlist-cache:v1:/comlist.html','{broken'));await reopened.reload();await reopened.locator('#lockpass').fill('fixture-pass');await reopened.locator('#lockbtn').click();await reopened.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');assert.ok(await reopened.locator('#today-dashboard').textContent());
     await reopened.setViewportSize({width:390,height:844});await reopened.locator('[data-view="analytics"]').click();assert.ok(await reopened.locator('#analyticswrap').textContent());await reopened.screenshot({path:path.join(target,'mobile.png'),fullPage:true});
-    assert.deepEqual(errors,[]);const manifest=verifyBundle(path.join(target,'comlist.html'));measurements.htmlBytes=fs.statSync(path.join(target,'comlist.html')).size;measurements.totalBytes=measurements.htmlBytes+manifest.files.reduce((a,f)=>a+f.bytes,0);measurements.tests=['初回表示','予定編集と保存','通信失敗後のリロード復元','追加と復元','検索・並び替え','イベント削除と復元','完了チェック・解除の復元','閉じて再開','破損からの復帰','スマホ分析表示'];fs.writeFileSync(path.join(target,'result.json'),JSON.stringify(measurements,null,2)+'\n');console.log('BROWSER_E2E: OK '+JSON.stringify(measurements));
+    assert.deepEqual(errors,[]);const manifest=verifyBundle(path.join(target,'comlist.html'));measurements.htmlBytes=fs.statSync(path.join(target,'comlist.html')).size;measurements.totalBytes=measurements.htmlBytes+manifest.files.reduce((a,f)=>a+f.bytes,0);measurements.tests=['初回表示とホーム順序','予定編集と保存','通信失敗後のリロード復元','追加と復元','検索・並び替え','イベント削除と復元','完了チェック・解除の復元','閉じて再開','破損からの復帰','スマホ分析表示','2端末の競合と入力保持','連絡記録のキャンセル','応答消失・再読込・同一ID再試行','連絡した・返信待ち・次の予定を決める','スマホの4枠展開と横幅'];fs.writeFileSync(path.join(target,'result.json'),JSON.stringify(measurements,null,2)+'\n');console.log('BROWSER_E2E: OK '+JSON.stringify(measurements));
   }finally{await browser.close();await new Promise(r=>server.close(r));}
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});

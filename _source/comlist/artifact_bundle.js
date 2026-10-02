@@ -5,6 +5,7 @@ const hash=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 function writeBundle(out,expanded,assetRoot,io=fs){
   const root=path.dirname(out),files=new Map();
   function asset(name,ext,bytes){
+    if((ext==='js'||ext==='css')&&name!=='payload')bytes=String(bytes).replace(/\r\n/g,'\n').replace(/\s+$/,'')+'\n';
     bytes=Buffer.isBuffer(bytes)?bytes:Buffer.from(bytes);
     const digest=hash(bytes),ref='assets/comlist/'+name+'.'+digest.slice(0,20)+'.'+ext;
     files.set(ref,{path:ref,bytes:bytes.length,sha256:digest,content:bytes});return ref;
@@ -27,6 +28,7 @@ function writeBundle(out,expanded,assetRoot,io=fs){
     const ref=asset(name||'app','js',js);return '<script data-comlist="'+(name||'app')+'" src="'+ref+'"></script>';
   });
   if(/data:image\/[^;]+;base64/.test(html))throw Error('base64 image remained in HTML');
+  html=html.replace(/\r\n/g,'\n');
   const manifest={version:1,files:[...files.values()].map(({content,...entry})=>entry)};
   const manifestBytes=JSON.stringify(manifest,null,2)+'\n';
   const manifestRef='assets/comlist/manifest.'+hash(manifestBytes).slice(0,20)+'.json';
