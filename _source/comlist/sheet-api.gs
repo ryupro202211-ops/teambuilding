@@ -66,28 +66,35 @@ var MATERIAL_SNAPSHOT_DAYS = 32; // 今日 + 31日先まで（終了日は含め
 // 履歴に追記するときの区切り文字。詰まって見えるなら ' / ' などに変更する。
 var HISTORY_SEP = ' ';
 
-// Existing A:Z columns remain intact. AA:AC are explicitly set up by the owner.
+// Existing A:AC columns remain intact. AD:AF are explicitly set up by the owner.
+var CONTACT_TRACKING_START_COLUMN = 30;
+var CONTACT_TRACKING_COLUMN_COUNT = 3;
+var CONTACT_TRACKING_REQUEST_COLUMN = CONTACT_TRACKING_START_COLUMN + CONTACT_TRACKING_COLUMN_COUNT - 1;
+var CONTACT_TRACKING_RANGE = 'AD:AF';
 var CONTACT_TRACKING_HEADERS = ['連絡記録状態', '連絡記録日', '連絡記録リクエスト'];
 function contactTrackingReady_(sh) {
-  if(sh.getMaxColumns&&sh.getMaxColumns()<29)return false;
-  var headers=sh.getRange(1,27,1,3).getValues()[0];
+  if(sh.getMaxColumns&&sh.getMaxColumns()<CONTACT_TRACKING_REQUEST_COLUMN)return false;
+  var headers=sh.getRange(1,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).getValues()[0];
   return CONTACT_TRACKING_HEADERS.every(function(h,i){return cellText_(headers[i])===h;});
 }
 function setupContactTrackingSheet() {
   return withMaterialLock_(function(){
-    var sh=getSheet_();if(sh.getMaxColumns&&sh.getMaxColumns()<29)sh.insertColumnsAfter(sh.getMaxColumns(),29-sh.getMaxColumns());
-    var headers=sh.getRange(1,27,1,3).getValues()[0];
-    if(headers.some(function(v,i){return cellText_(v)&&cellText_(v)!==CONTACT_TRACKING_HEADERS[i];}))throw Error('AA:ACには既存データがあります。列を確認してください。');
+    var sh=getSheet_();if(sh.getMaxColumns&&sh.getMaxColumns()<CONTACT_TRACKING_REQUEST_COLUMN)sh.insertColumnsAfter(sh.getMaxColumns(),CONTACT_TRACKING_REQUEST_COLUMN-sh.getMaxColumns());
+    var headerRange=sh.getRange(1,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT),headers=headerRange.getValues()[0];
+    if(headerRange.getFormulas&&headerRange.getFormulas()[0].some(function(v){return v!=='';}))throw Error(CONTACT_TRACKING_RANGE+'の見出しに既存の数式があります。設定を中止しました。');
+    if(headers.some(function(v,i){return cellText_(v)&&cellText_(v)!==CONTACT_TRACKING_HEADERS[i];}))throw Error('AD:AFには既存データがあります。列を確認してください。');
     if(!contactTrackingReady_(sh)){
       var n=sh.getLastRow()-1;
-      if(n>0&&sh.getRange(2,27,n,3).getValues().some(function(r){return r.some(function(v){return cellText_(v)!=='';});}))throw Error('AA:ACには既存データがあります。設定を中止しました。');
-      sh.getRange(1,27,1,3).setValues([CONTACT_TRACKING_HEADERS]);SpreadsheetApp.flush();
+      var dataRange=n>0?sh.getRange(2,CONTACT_TRACKING_START_COLUMN,n,CONTACT_TRACKING_COLUMN_COUNT):null;
+      if(dataRange&&dataRange.getFormulas&&dataRange.getFormulas().some(function(r){return r.some(function(v){return v!=='';});}))throw Error(CONTACT_TRACKING_RANGE+'には既存の数式があります。設定を中止しました。');
+      if(n>0&&dataRange.getValues().some(function(r){return r.some(function(v){return cellText_(v)!=='';});}))throw Error('AD:AFには既存データがあります。設定を中止しました。');
+      sh.getRange(1,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).setValues([CONTACT_TRACKING_HEADERS]);SpreadsheetApp.flush();
     }
-    return {ok:true,columns:'AA:AC'};
+    return {ok:true,columns:CONTACT_TRACKING_RANGE};
   });
 }
 function contactVersion_(sh,row) {
-  return contactVersionFromCells_(sh.getRange(row,1,1,COLUMNS.length).getValues()[0],contactTrackingReady_(sh)?sh.getRange(row,27,1,3).getValues()[0]:null);
+  return contactVersionFromCells_(sh.getRange(row,1,1,COLUMNS.length).getValues()[0],contactTrackingReady_(sh)?sh.getRange(row,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).getValues()[0]:null);
 }
 function contactVersionFromCells_(row,meta) {
   var cells=row.map(cellText_);
@@ -103,11 +110,11 @@ function checkContactVersion_(sh,row,body){
 }
 function contactState_(sh,row){
   if(!contactTrackingReady_(sh))return null;
-  var v=sh.getRange(row,27,1,3).getValues()[0].map(cellText_);
+  var v=sh.getRange(row,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).getValues()[0].map(cellText_);
   return /^(contacted|waiting|planning)$/.test(v[0])?{status:v[0],date:v[1]}:null;
 }
 function readContactRecord_(sh,row){
-  var cells=sh.getRange(row,1,1,COLUMNS.length).getValues()[0],meta=contactTrackingReady_(sh)?sh.getRange(row,27,1,3).getValues()[0]:null;
+  var cells=sh.getRange(row,1,1,COLUMNS.length).getValues()[0],meta=contactTrackingReady_(sh)?sh.getRange(row,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).getValues()[0]:null;
   var record={_row:row,_version:contactVersionFromCells_(cells,meta)};
   COLUMNS.forEach(function(k,i){var v=cellText_(cells[i]);if(v)record[k]=v;});
   if(meta&&/^(contacted|waiting|planning)$/.test(cellText_(meta[0])))record._contactState={status:cellText_(meta[0]),date:cellText_(meta[1])};
@@ -115,11 +122,11 @@ function readContactRecord_(sh,row){
 }
 function contactActionRecord_(body,row){
   var sh=getSheet_();
-  if(!contactTrackingReady_(sh))return {ok:false,error:'tracking not ready',message:'GAS所有者による連絡記録列（AA:AC）の設定が必要です。'};
+  if(!contactTrackingReady_(sh))return {ok:false,error:'tracking not ready',message:'GAS所有者による連絡記録列（AD:AF）の設定が必要です。'};
   if(!/^(contacted|waiting|planning)$/.test(body.status)||!eventDateIsValid_(body.date)||!/^[a-zA-Z0-9-]{16,80}$/.test(body.requestId))return {ok:false,error:'invalid input'};
   var name=String(body.name||'').trim();if(!name)return {ok:false,error:'invalid input'};
   if(cellText_(sh.getRange(row,NAME_COL).getValue())!==name){var matches=findRowsByName_(sh,name);if(matches.length!==1)return {ok:false,error:matches.length?'ambiguous name':'name not found'};row=matches[0];}
-  var receiptText=cellText_(sh.getRange(row,29).getValue()),receipt;
+  var receiptText=cellText_(sh.getRange(row,CONTACT_TRACKING_REQUEST_COLUMN).getValue()),receipt;
   try{receipt=JSON.parse(receiptText);}catch(e){receipt=null;}
   // The durable last receipt survives a lost response; do not replay any changes.
   if(receipt&&receipt.id===body.requestId){
@@ -136,7 +143,7 @@ function contactActionRecord_(body,row){
     var parts=old.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/),oldIso=parts?parts[1]+'-'+('0'+parts[2]).slice(-2)+'-'+('0'+parts[3]).slice(-2):null;
     if(!old||(oldIso&&oldIso<=body.date)){d.setUTCDate(d.getUTCDate()+CONTACT_CYCLE[cat]);updated['アクション日']=d.getUTCFullYear()+'/'+(d.getUTCMonth()+1)+'/'+d.getUTCDate();setCell_(sh,row,EDITABLE['アクション日'],updated['アクション日']);}
   }
-  sh.getRange(row,27,1,3).setValues([[body.status,body.date,JSON.stringify({id:body.requestId,status:body.status,date:body.date})]]);SpreadsheetApp.flush();
+  sh.getRange(row,CONTACT_TRACKING_START_COLUMN,1,CONTACT_TRACKING_COLUMN_COUNT).setValues([[body.status,body.date,JSON.stringify({id:body.requestId,status:body.status,date:body.date})]]);SpreadsheetApp.flush();
   return {ok:true,row:row,version:contactVersion_(sh,row),updated:updated,contactState:contactState_(sh,row)};
 }
 
@@ -557,7 +564,7 @@ function readContacts_() {
   var last = sh.getLastRow();
   if (last < 2) return [];
   var values = sh.getRange(2, 1, last - 1, COLUMNS.length).getValues();
-  var tracking=contactTrackingReady_(sh),meta=tracking?sh.getRange(2,27,last-1,3).getValues():[];
+  var tracking=contactTrackingReady_(sh),meta=tracking?sh.getRange(2,CONTACT_TRACKING_START_COLUMN,last-1,CONTACT_TRACKING_COLUMN_COUNT).getValues():[];
   var records = [];
   values.forEach(function (row, i) {
     var cat = cellText_(row[0]);
