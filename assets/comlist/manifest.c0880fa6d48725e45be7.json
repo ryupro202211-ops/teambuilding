@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "assets/comlist/brief-hero-morning-v2.be700651a5fdce6ec363.jpg",
+      "bytes": 153655,
+      "sha256": "be700651a5fdce6ec363adabd4dc9e8dced1a06d95f0358dad6f9347cdbab753"
+    },
+    {
+      "path": "assets/comlist/brief-icons-v2.84a02a3fe017e03daf9e.png",
+      "bytes": 2436864,
+      "sha256": "84a02a3fe017e03daf9e300095426bbe9e7c209423df27aa916c0182ec111d0a"
+    },
+    {
+      "path": "assets/comlist/victory-icons-v1.7c17fc9f72024978e910.png",
+      "bytes": 704170,
+      "sha256": "7c17fc9f72024978e9104f336608bc8b7c09a751a3f9feac83d379812b5aa661"
+    },
+    {
+      "path": "assets/comlist/victory-banner-v1.fbbfe9b2f15530ba4ec1.jpg",
+      "bytes": 57491,
+      "sha256": "fbbfe9b2f15530ba4ec13f9bd08d49dec77292cef3f51198f6615534014ac10e"
+    },
+    {
+      "path": "assets/comlist/menu-icons-v1.95717ea09a2366c60bff.png",
+      "bytes": 905021,
+      "sha256": "95717ea09a2366c60bff01a7a3bdcdbc7c1f4c62829dbc292d6ac692f28a28d3"
+    },
+    {
+      "path": "assets/comlist/garden-icons-v1.b7b0e5fcb412dc464afc.png",
+      "bytes": 1696285,
+      "sha256": "b7b0e5fcb412dc464afcd627e893561d9d0b975bb3d3f10fe96a4b09d2e8f61c"
+    },
+    {
+      "path": "assets/comlist/comlist.2b6ba34d6047d5d79b7c.css",
+      "bytes": 50864,
+      "sha256": "2b6ba34d6047d5d79b7c9f5c4b172dcc4794ff4a42cb59f4cbd280ce0e41e441"
+    },
+    {
+      "path": "assets/comlist/payload.7238dbe77c4cd442f91c.js",
+      "bytes": 335809,
+      "sha256": "7238dbe77c4cd442f91cc0d3014ceb46173c39dfd623fece16d941387346c7b6"
+    },
+    {
+      "path": "assets/comlist/lock.95e085792200b89b661e.js",
+      "bytes": 2223,
+      "sha256": "95e085792200b89b661e11672f8c7e2d26bfb0f36899154a157c519aee4f10cb"
+    },
+    {
+      "path": "assets/comlist/storage.b9a0fe44382ca79bd3c0.js",
+      "bytes": 5472,
+      "sha256": "b9a0fe44382ca79bd3c0f3f89692cc14077d68fb79b0f246bfeb167cd68cc9a1"
+    },
+    {
+      "path": "assets/comlist/config.61498ce56695bdeae540.js",
+      "bytes": 245,
+      "sha256": "61498ce56695bdeae540b2784fe61a23e6949336c55b98bc8ae2e65a2632f565"
+    },
+    {
+      "path": "assets/comlist/api.198911bf75aae430f1ff.js",
+      "bytes": 2288,
+      "sha256": "198911bf75aae430f1ff9cbf4ce6b022798925d37e4c1c713ae88081d89e5e42"
+    },
+    {
+      "path": "assets/comlist/contacts.c10dae6818e700950889.js",
+      "bytes": 49826,
+      "sha256": "c10dae6818e700950889b6926235f36f9a4785cbd52cba53371bceb23a572155"
+    },
+    {
+      "path": "assets/comlist/contact-actions.2c08d40a2906743b9c57.js",
+      "bytes": 9937,
+      "sha256": "2c08d40a2906743b9c579c3d1d867c94c53f2190b60924d19879f2ece31c3faa"
+    },
+    {
+      "path": "assets/comlist/events.0ba83b8811997c45bae2.js",
+      "bytes": 49628,
+      "sha256": "0ba83b8811997c45bae253bc5b217d26f5107b7c931ee86edce33a7c605e75ab"
+    },
+    {
+      "path": "assets/comlist/analytics.075af2607136ddbd4711.js",
+      "bytes": 6723,
+      "sha256": "075af2607136ddbd4711afffcf9e0655f71239e2a8e840e93d3986015634e474"
+    },
+    {
+      "path": "assets/comlist/field-progress.c2d1b37206d8bbb057fc.js",
+      "bytes": 6190,
+      "sha256": "c2d1b37206d8bbb057fcbcce910e008cc7fed16c6a9b9b92bcb66adc1d0ddb66"
+    },
+    {
+      "path": "assets/comlist/tasks.e3a89649e7f89a45dd6c.js",
+      "bytes": 30789,
+      "sha256": "e3a89649e7f89a45dd6c1fff90313c63360d123badc390d942e3054f221f4ceb"
+    },
+    {
+      "path": "assets/comlist/app.0b7edda6b659b9e90d11.js",
+      "bytes": 3159,
+      "sha256": "0b7edda6b659b9e90d118766714df792800ecdf64b7adc2a35632aef8e43ac8a"
+    }
+  ]
+}

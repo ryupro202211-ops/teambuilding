@@ -36,6 +36,8 @@ test("現場数タブは今月と過去月の5項目、出典、月別グラフ�
   assert.equal(w.document.querySelectorAll(".field-card").length, 5);
   assert.match(w.document.getElementById("fieldwrap").textContent, /活動日 10月1日時点/);
   assert.equal(w.document.querySelectorAll(".field-chart-row").length, 2);
+  assert.deepEqual(Array.from(w.document.querySelectorAll(".field-chart-month"), e => e.textContent), ["2026/10※", "2026/09"]);
+  assert.deepEqual(Array.from(w.FIELD_PROGRESS.months, m => m.month), ["2026-09", "2026-10"]);
   assert.match(w.document.querySelector(".field-source a").href, /3ed4057e224281f09e90c6283a435121/);
   const month = w.document.getElementById("field-month");
   month.value = "2026-09";
@@ -46,6 +48,7 @@ test("現場数タブは今月と過去月の5項目、出典、月別グラフ�
   metric.value = "new_friends";
   metric.dispatchEvent(new w.Event("change"));
   assert.match(w.document.querySelector(".field-chart").getAttribute("aria-label"), /新友達/);
+  assert.deepEqual(Array.from(w.document.querySelectorAll(".field-chart-month"), e => e.textContent), ["2026/10※", "2026/09"]);
 });
 
 test("現場数が未搭載の旧データでも画面を開ける", t => {
