@@ -57,5 +57,5 @@ test("現場数が未搭載の旧データでも画面を開ける", t => {
   const dom = new JSDOM(html, { runScripts: "dangerously", url: "http://localhost" });
   t.after(() => dom.window.close());
   dom.window.setView("field");
-  assert.match(dom.window.document.getElementById("fieldwrap").textContent, /まだありません/);
+  assert.match(dom.window.document.getElementById("fieldwrap").textContent, /未報告/);
 });

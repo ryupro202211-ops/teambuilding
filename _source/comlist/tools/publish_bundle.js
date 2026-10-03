@@ -10,6 +10,7 @@ function publishBundle(source,target){
   // A positive allowlist prevents contacts, OAuth, tokens and generated personal notes being copied.
   const sourceTarget=path.join(target,'_source/comlist');
   const rootFiles=['.gitignore','eslint.config.cjs','analysis_history.js','field_progress.js','app_sources.js','append_quote.js','artifact_bundle.js','brief_icons.js','build_brief.js','build.js','compose_daily_tasks.js','daily_tasks.js','event_records.js','fetch_gmail_tasks.js','fetch_materials.js','garden_paths.js','gmail_tasks.js','material_snapshot.js','migrate_events.js','parse_events.js','resolved_tasks.js','package.json','package-lock.json','sheet-api.gs'];
+  rootFiles.push('field_goals_api.gs');
   for(const ref of rootFiles)if(fs.existsSync(path.join(source,ref)))copy(source,ref,sourceTarget);
   function collect(dir){if(!fs.existsSync(path.join(source,dir)))return;for(const entry of fs.readdirSync(path.join(source,dir),{withFileTypes:true})){const ref=dir+'/'+entry.name;if(entry.isSymbolicLink())throw Error('source symlink refused');if(entry.isDirectory())collect(ref);else if(/\.(?:js|cjs|css|html|json|md|png|jpg|ps1)$/.test(entry.name))copy(source,ref,sourceTarget);}}
   for(const dir of ['_assets/js','_assets/css','test','tools'])collect(dir);
@@ -17,7 +18,7 @@ function publishBundle(source,target){
   if(fs.existsSync(path.join(source,'tools/comlist-tests.yml')))copy(path.join(source,'tools'),'comlist-tests.yml',path.join(target,'.github/workflows'));
   if(fs.existsSync(path.join(source,'_assets/list.html')))copy(source,'_assets/list.html',sourceTarget);
   for(const image of ['garden-icons-v1.png','menu-icons-v1.png','brief-icons-v2.png','brief-hero-morning-v2.jpg','victory-icons-v1.png','victory-banner-v1.jpg'])if(fs.existsSync(path.join(source,'_assets',image)))copy(source,'_assets/'+image,sourceTarget);
-  for(const doc of ['docs/comlist-refactor-analysis.md','docs/comlist-refactor-report.md','docs/daily-actions-release.md'])if(fs.existsSync(path.join(source,doc)))copy(source,doc,sourceTarget);
+  for(const doc of ['docs/comlist-refactor-analysis.md','docs/comlist-refactor-report.md','docs/daily-actions-release.md','docs/field-goals-release.md'])if(fs.existsSync(path.join(source,doc)))copy(source,doc,sourceTarget);
   fs.mkdirSync(sourceTarget,{recursive:true});fs.writeFileSync(path.join(sourceTarget,'README.md'),'# Comlist source\n\nThe public entry point is `/comlist.html`. Edit `_assets/list.html`, `_assets/css/`, and `_assets/js/`; build.js generates the hashed deployment bundle. Google Sheets remains authoritative; private material and credentials are not included.\n\nRun `npm ci` then `npm test`. Real-browser fixture tests: `node tools/test_browser.cjs` with `CODEX_NODE_MODULES` pointing to a runtime containing Playwright.\n');
   // Switch the HTML last; all referenced immutable dependencies already exist.
   const destination=path.join(target,'comlist.html'),temporary=destination+'.'+crypto.randomBytes(6).toString('hex')+'.tmp';

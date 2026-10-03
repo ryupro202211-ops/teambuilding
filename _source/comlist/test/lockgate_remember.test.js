@@ -5,6 +5,7 @@ const {webcrypto}=require('node:crypto');
 
 /* build.js のロック画面を最小のページに入れ、端末記憶の挙動だけを確かめる。 */
 const {gateHtmlForTest,encryptForTest}=require('../build.js');
+async function until(predicate){const end=Date.now()+5000;while(!predicate()){assert.ok(Date.now()<end,'unlock did not finish');await new Promise(r=>setTimeout(r,10));}}
 
 async function page(t,stored){
   const ENC=await encryptForTest({contacts:[],dailyTasks:{date:'2026-09-26',tasks:[]}},'secret');
@@ -15,7 +16,7 @@ async function page(t,stored){
     if(stored) w.localStorage.setItem('garden-pass',JSON.stringify(stored));
   }});
   t.after(()=>dom.window.close());
-  await new Promise(r=>setTimeout(r,300));
+  if(stored)await until(()=>dom.window.document.getElementById('lockgate').style.display==='none'||dom.window.localStorage.getItem('garden-pass')===null);
   return dom.window;
 }
 const hidden=w=>w.document.getElementById('lockgate').style.display==='none';
@@ -47,7 +48,7 @@ test('チェックして開いたときだけ記憶する',async t=>{
   w.document.getElementById('lockpass').value='secret';
   w.document.getElementById('lockremember').checked=true;
   w.document.getElementById('lockbtn').click();
-  await new Promise(r=>setTimeout(r,300));
+  await until(()=>hidden(w));
   assert.equal(hidden(w),true);
   assert.equal(JSON.parse(w.localStorage.getItem('garden-pass')).p,'secret');
 });
