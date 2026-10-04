@@ -36,13 +36,13 @@ function gas() {
   let filter = { getRange: () => ({ getRow: () => 1, getColumn: () => 1, getNumRows: () => 100, getNumColumns: () => 13 }) };
   const timed = {
     getId: () => 'fixture-timed', getTitle: () => 'テスト会議', getLocation: () => 'テスト会場', getDescription: () => '確認する詳細',
-    isAllDayEvent: () => false,
+    isAllDayEvent: () => false, getMyStatus: () => "YES", getTransparency: () => "OPAQUE",
     getStartTime: () => new Date("2026-09-22T18:00:00+09:00"),
     getEndTime: () => new Date("2026-09-22T19:00:00+09:00")
   };
   const allDay = {
     getId: () => 'fixture-all-day', getTitle: () => 'テスト終日', getLocation: () => '', getDescription: () => '',
-    isAllDayEvent: () => true,
+    isAllDayEvent: () => true, getMyStatus: () => "YES", getTransparency: () => "OPAQUE",
     getStartTime: () => new Date("2026-09-23T00:00:00+09:00"),
     getEndTime: () => new Date("2026-09-24T00:00:00+09:00")
   };
@@ -191,6 +191,7 @@ function gas() {
           timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit",
           hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
         }).formatToParts(date).reduce((o, p) => (o[p.type] = p.value, o), {});
+        if (pattern === "yyyy-MM-dd") return `${parts.year}-${parts.month}-${parts.day}`;
         if (pattern === "yyyy-MM-dd'T'HH:mm:ss") {
           return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`;
         }
@@ -227,14 +228,31 @@ test("GAS snapshot contains contacts, structured events and timed calendar event
   assert.equal(snapshot.events[0].id, "evt_01JTEST00000000000000001");
   assert.equal("eventRows" in snapshot, false);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.calendar)), [
-    ["2026-09-22T18:00", "2026-09-22T19:00", {source:'primary',eventId:'fixture-timed',allDay:false,detailsAvailable:true,title:'テスト会議',location:'テスト会場',description:'確認する詳細'}],
-    ["2026-09-23T00:00", "2026-09-24T00:00", {source:'primary',eventId:'fixture-all-day',allDay:true,detailsAvailable:true,title:'テスト終日',location:'',description:''}]
+    ["2026-09-22T18:00", "2026-09-22T19:00", {source:'primary',eventId:'fixture-timed',allDay:false,detailsAvailable:true,availabilityKnown:true,selfStatus:'yes',transparency:'opaque',status:'confirmed',title:'テスト会議',location:'テスト会場',description:'確認する詳細'}],
+    ["2026-09-23T00:00", "2026-09-24T00:00", {source:'primary',eventId:'fixture-all-day',allDay:true,detailsAvailable:true,availabilityKnown:true,selfStatus:'yes',transparency:'opaque',status:'confirmed',title:'テスト終日',location:'',description:''}]
   ]);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.counts)), {
     contacts: 1, events: 1, calendar: 2
   });
   assert.equal(snapshot.digest, snapshotDigest(snapshot));
   assert.equal(props.get("MATERIAL_SNAPSHOT_COUNT_CONTACTS"), "1");
+});
+test('authenticated availability read includes primary coverage and freshness without sheet writes',()=>{
+ const {ctx,calls}=gas(),before=calls.flush;
+ const response=ctx.doPost({postData:{contents:JSON.stringify({action:'read',what:'calendarAvailability',token:'test-token'})}});
+ assert.equal(response.ok,true);assert.equal(response.calendarAvailability.info.source,'primary');assert.equal(response.calendarAvailability.info.complete,true);assert.ok(Date.parse(response.calendarAvailability.info.fetchedAt));assert.equal(calls.flush,before);
+ assert.equal(ctx.doPost({postData:{contents:JSON.stringify({action:'read',what:'calendarAvailability',token:'wrong'})}}).ok,false);
+ ctx.CalendarApp.getDefaultCalendar=()=>({getEvents:()=>[{isAllDayEvent:()=>false,getId:()=> 'unknown-fixture',getStartTime:()=>new Date('2026-10-04T10:00:00+09:00'),getEndTime:()=>new Date('2026-10-04T11:00:00+09:00')}]});
+ const partial=ctx.doPost({postData:{contents:JSON.stringify({action:'read',what:'calendarAvailability',token:'test-token'})}});assert.equal(partial.ok,true);assert.equal(partial.calendarAvailability.info.complete,false);
+});
+test('optional midnight validation changes E rule only and existing rules remain compatible',()=>{
+ const {ctx}=gas(),old=ctx.eventValidationSpec_(5),next=ctx.midnightEndValidationSpec_();
+ assert.equal(ctx.eventValidationSpecMatches_(next,old),true);assert.equal(ctx.eventValidationSpecMatches_({...next,allowInvalid:true},old),false);assert.equal(ctx.eventValidationSpecMatches_(next,ctx.eventValidationSpec_(4)),false);
+ const touched=[],sheet={getMaxRows:()=>100,getRange:(...args)=>({setDataValidation:rule=>touched.push({args,rule})})};
+ ctx.getEventsManagedSheet_=()=>sheet;ctx.assertStructuredEventSheetReady_=()=>sheet;
+ ctx.SpreadsheetApp.newDataValidation=()=>({requireFormulaSatisfied:formula=>({setAllowInvalid:allowInvalid=>({build:()=>({formula,allowInvalid})})})});
+ assert.equal(ctx.enableMidnightEventEndValidation().ok,true);assert.equal(touched.length,1);assert.deepEqual(touched[0].args,[2,5,99,1]);assert.equal(touched[0].rule.allowInvalid,false);
+ assert.throws(()=>ctx.assertMidnightEventEndReady_({getRange:()=>({getDataValidation:()=>({getCriteriaType:()=>old.criteriaType,getCriteriaValues:()=>old.criteriaValues,getAllowInvalid:()=>false})})},{endTime:'24:00'}));
 });
 
 test("old eventRows cache is ignored after the snapshot contract version changes", () => {

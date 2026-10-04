@@ -59,7 +59,7 @@ function normalizeEvent(input, { allowMissingId = false, allowMissingVersion = f
   if (!EVENT_STATUSES.has(event.status)) throw new Error("状態が不正です");
   if (!isValidDate(event.date)) throw new Error("開催日が不正です");
   if (event.startTime && !TIME_RE.test(event.startTime)) throw new Error("開始時刻が不正です");
-  if (event.endTime && !TIME_RE.test(event.endTime)) throw new Error("終了時刻が不正です");
+  if (event.endTime && event.endTime!=='24:00' && !TIME_RE.test(event.endTime)) throw new Error("終了時刻が不正です");
   if (event.endTime && !event.startTime) throw new Error("開始時刻が必要です");
   if (event.startTime && event.endTime && event.endTime <= event.startTime) {
     throw new Error("終了時刻が開始時刻より前です");

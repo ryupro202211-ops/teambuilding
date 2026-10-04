@@ -388,6 +388,7 @@ function gateHtml(ENC, dateStr) {
     + '      DATA=payload.contacts;\n'
     + '      DAILY_TASKS=payload.dailyTasks;\n'
     + '      window.FIELD_PROGRESS=payload.fieldProgress||null;\n'
+    + '      if(typeof CALENDAR_AVAILABILITY!=="undefined")CALENDAR_AVAILABILITY=payload.calendarAvailability||null;\n'
     + '      window.PASSPHRASE=pass;\n'
     + '      if(typeof initializeSavedState === \"function\") await initializeSavedState(pass,DAILY_TASKS.date);\n'  // 「今日のタスク」が朝ブリーフを復号するのに使う。メモリ上だけで保持する
     + '      if(typeof saved!=="string"&&document.getElementById("lockremember").checked)remember(pass);\n'
@@ -434,7 +435,7 @@ async function fullBuild() {
       throw new Error("既存データに連絡先または日次タスクがありません。通常ビルドを実行してください。");
     }
     retained = {
-      contacts: payload.contacts, dailyTasks: payload.dailyTasks, fieldProgress: payload.fieldProgress,
+      contacts: payload.contacts, dailyTasks: payload.dailyTasks, fieldProgress: payload.fieldProgress, calendarAvailability: payload.calendarAvailability,
       events: JSON.parse(events[1]), slots: JSON.parse(slots[1]),
       date: date[1] + "-" + date[2].padStart(2, "0") + "-" + date[3].padStart(2, "0")
     };
@@ -558,6 +559,8 @@ async function fullBuild() {
   }
   const freeSlots = retained ? retained.slots : computeSlots(calendar, TODAY, NOWHM);
   const payload = { contacts, dailyTasks };
+  if(retained&&retained.calendarAvailability)payload.calendarAvailability=retained.calendarAvailability;
+  if(!retained){const availabilityProof=JSON.parse(fs.readFileSync(resolveMaterialSelection(materialPaths,ARGS['snapshot-proof'],fs).proof,'utf8'));if(availabilityProof.calendarInfo)payload.calendarAvailability=require('./_assets/js/calendar-availability').validate({events:calendar.map(r=>[r[0],r[1],{allDay:r[2].allDay,status:r[2].status||'',selfStatus:r[2].selfStatus||'',transparency:r[2].transparency||''}]),info:availabilityProof.calendarInfo});}
   const fieldSource = ARGS["field-progress"] || (!retained && fs.existsSync("_work/field_progress.json") ? "_work/field_progress.json" : null);
   const previousField = retained ? retained.fieldProgress : prevPayload && prevPayload.fieldProgress;
   if (fieldSource) {

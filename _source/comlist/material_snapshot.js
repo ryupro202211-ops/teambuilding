@@ -7,7 +7,7 @@ const SNAPSHOT_VERSION = 2;
 const DEFAULT_MAX_AGE_MS = 3 * 60 * 60 * 1000;
 
 function digestPayload(snapshot) {
-  return {
+  const result = {
     version: snapshot.version,
     generatedAt: snapshot.generatedAt,
     contacts: snapshot.contacts,
@@ -15,6 +15,8 @@ function digestPayload(snapshot) {
     calendar: snapshot.calendar,
     counts: snapshot.counts
   };
+  if(snapshot.calendarInfo)result.calendarInfo=snapshot.calendarInfo;
+  return result;
 }
 
 function snapshotDigest(snapshot) {
@@ -54,6 +56,7 @@ function validateSnapshot(snapshot, options = {}) {
   }
   const events = validateEventList(snapshot.events);
   require('./calendar_schedule').normalizeCalendar(snapshot.calendar);
+  if(snapshot.calendarInfo)require('./_assets/js/calendar-availability').validate({events:snapshot.calendar,info:snapshot.calendarInfo});
   const actualCounts = {
     contacts: snapshot.contacts.length,
     events: events.length,
@@ -72,6 +75,7 @@ function validateSnapshot(snapshot, options = {}) {
     events,
     calendar: snapshot.calendar,
     counts: actualCounts,
+    calendarInfo: snapshot.calendarInfo || null,
     generatedAt: snapshot.generatedAt,
     ageMs
   };

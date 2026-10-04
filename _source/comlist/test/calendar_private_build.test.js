@@ -7,7 +7,7 @@ test('予定詳細は暗号化後にだけ表示し、公開HTML・manifest・as
  const advice='FIXTURE_PRIVATE_FRIEND_ADVICE';secrets.push(advice);
  const values={contacts:[{_row:2,'名前(あだ名)':'Fixture contact','カテゴリー':'A','仲間づくりアドバイス':advice}],events:[],calendar:[['2026-10-03T00:00','2026-10-04T23:59',{source:'primary',eventId:'fixture-private',title:secrets[0],location:secrets[1],description:secrets[2],allDay:false,detailsAvailable:true}]],tasks:{date:'2026-10-04',tasks:[],sources:{calendar:{ok:true},notion:{ok:true},gmail:{ok:true,checkedThreads:0,uniqueThreads:0}}}};
  const files={};for(const [name,value]of Object.entries(values)){const filename=path.join(temp,name+'.json'),bytes=Buffer.from(JSON.stringify(value));fs.writeFileSync(filename,bytes);args.push('--'+name,filename);if(name!=='tasks')files[name]={path:name+'.json',bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};}
- fs.writeFileSync(path.join(temp,'snapshot_success.json'),JSON.stringify({version:1,result:'OK',source:'snapshot',generatedAt:new Date().toISOString(),files}));
+ fs.writeFileSync(path.join(temp,'snapshot_success.json'),JSON.stringify({version:1,result:'OK',source:'snapshot',generatedAt:new Date().toISOString(),calendarInfo:{source:'primary',fetchedAt:new Date().toISOString(),rangeStart:'2026-10-04T00:00:00+09:00',rangeEnd:'2026-11-05T00:00:00+09:00',complete:true},files}));
  const out=path.join(temp,'comlist.html');args.push('--out',out);const result=spawnSync(process.execPath,args,{encoding:'utf8'});assert.equal(result.status,0,result.stderr);
  const bundle=require('../artifact_bundle').verifyBundle(out);for(const file of [out,...bundle.files.map(f=>path.join(temp,f.path)),path.join(temp,bundle.manifestPath)]){const content=fs.readFileSync(file);for(const secret of secrets)assert.equal(content.includes(secret),false);}
  for(const secret of secrets)assert.equal((result.stdout+result.stderr).includes(secret),false);
@@ -15,7 +15,7 @@ test('予定詳細は暗号化後にだけ表示し、公開HTML・manifest・as
  const key=await crypto.webcrypto.subtle.importKey('raw',new TextEncoder().encode('fixture-calendar-pass'),'PBKDF2',false,['deriveKey']);
  const derived=await crypto.webcrypto.subtle.deriveKey({name:'PBKDF2',salt:Buffer.from(enc.salt,'base64'),iterations:250000,hash:'SHA-256'},key,{name:'AES-GCM',length:256},false,['decrypt']);
  const payload=JSON.parse(new TextDecoder().decode(await crypto.webcrypto.subtle.decrypt({name:'AES-GCM',iv:Buffer.from(enc.iv,'base64')},derived,Buffer.from(enc.ct,'base64'))));
- assert.equal(payload.dailyTasks.calendar[0].title,secrets[0]);assert.equal(payload.dailyTasks.calendar[0].description,secrets[2]);assert.match(payload.dailyTasks.calendar[0].time,/継続中/);
+ assert.equal(payload.calendarAvailability.info.source,'primary');assert.equal(payload.calendarAvailability.events[0][2].title,undefined);assert.equal(payload.dailyTasks.calendar[0].title,secrets[0]);assert.equal(payload.dailyTasks.calendar[0].description,secrets[2]);assert.match(payload.dailyTasks.calendar[0].time,/継続中/);
  assert.equal(payload.contacts[0]['仲間づくりアドバイス'],advice);
  const source=require('../app_sources').readApp(path.join(root,'_assets/list.html')).replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
  const dom=new JSDOM(source,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());dom.window.DAILY_TASKS=payload.dailyTasks;dom.window.renderTodayTasks();

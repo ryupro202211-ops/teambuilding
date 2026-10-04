@@ -77,6 +77,7 @@ function createSnapshotProof(material, bytesByName, files = {}) {
     result: "OK",
     source: "snapshot",
     generatedAt: material.generatedAt,
+    calendarInfo: material.calendarInfo || null,
     files: manifest
   };
 }
@@ -294,6 +295,7 @@ async function collectMaterials(options) {
       contacts: material.contacts,
       events: validateEventList(material.events).map(eventToDisplay),
       calendar: material.calendar,
+      calendarInfo: material.calendarInfo || null,
       skipped: skipped
     };
   } catch (err) {

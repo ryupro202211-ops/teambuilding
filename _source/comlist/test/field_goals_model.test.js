@@ -9,7 +9,7 @@ test('月内の紹介人数は同じ人物を重複せず、紹介件数と月�
  assert.equal(s.prospects,1);assert.equal(s.remaining,2);assert.equal(s.metrics.introductions.additional,2);assert.equal(M.summarize(data([record('record-fixture-0003',{date:'2026-09-30'})]),report,'2026-09','2026-10-03').prospects,1);
 });
 test('確定と実施は排他的で、取消と延期と自由な予定から実績を作らない',()=>{
- const r=record('record-fixture-0001',{status:'confirmed',outcomeConfirmed:false,date:'2026-10-05'});let s=M.summarize(data([r]),report,'2026-10','2026-10-03');assert.equal(s.prospects,0);assert.equal(s.conditionalProspects,1);assert.equal(s.metrics.introductions.actual,0);assert.equal(s.metrics.introductions.secured,1);
+ const r=record('record-fixture-0001',{status:'confirmed',outcomeConfirmed:false,date:'2026-10-05',dueDate:'2026-10-05'});let s=M.summarize(data([r]),report,'2026-10','2026-10-03');assert.equal(s.prospects,0);assert.equal(s.conditionalProspects,1);assert.equal(s.metrics.introductions.actual,0);assert.equal(s.metrics.introductions.secured,1);
  r.status='completed';r.outcomeConfirmed=true;s=M.summarize(data([r]),report,'2026-10','2026-10-05');assert.equal(s.prospects,1);assert.equal(s.metrics.introductions.actual,1);assert.equal(s.metrics.introductions.secured,0);
  for(const status of ['proposed','postponed','cancelled'])assert.equal(M.summarize(data([{...r,status,outcomeConfirmed:false}]),report,'2026-10','2026-10-05').metrics.introductions.actual,0);
 });

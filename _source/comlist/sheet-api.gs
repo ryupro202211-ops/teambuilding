@@ -278,6 +278,10 @@ function doPost(e) {
         var snapshot = readMaterialSnapshot_();
         return json_({ ok: true, snapshot: snapshot });
       }
+      if (body.what === 'calendarAvailability') {
+        var calendarNow=new Date(),calendarRows=calendarSnapshot_(calendarNow);
+        return json_({ok:true,calendarAvailability:{events:calendarRows,info:calendarCoverage_(calendarNow,calendarRows)}});
+      }
       if (body.what === 'contacts') {
         var recs = readContacts_();
         return json_({ ok: true, records: recs, count: recs.length });
@@ -764,9 +768,28 @@ function eventValidationDetail_(rule) {
 }
 
 function eventValidationSpecMatches_(detail, spec) {
-  return !!detail && !!spec && detail.criteriaType === spec.criteriaType &&
-    JSON.stringify(detail.criteriaValues) === JSON.stringify(spec.criteriaValues) &&
-    detail.allowInvalid === spec.allowInvalid;
+  if(!detail||!spec||detail.criteriaType!==spec.criteriaType||detail.allowInvalid!==spec.allowInvalid)return false;
+  if(JSON.stringify(detail.criteriaValues)===JSON.stringify(spec.criteriaValues))return true;
+  // Only the exact optional end-at-midnight rule is accepted in addition to the old E rule.
+  return JSON.stringify(spec.criteriaValues)===JSON.stringify(eventValidationSpec_(5).criteriaValues)&&
+    JSON.stringify(detail.criteriaValues)===JSON.stringify(midnightEndValidationSpec_().criteriaValues);
+}
+
+function midnightEndValidationSpec_(){
+  var spec=eventValidationSpec_(5);spec.criteriaValues=[spec.criteriaValues[0].slice(0,-1)+',E2="24:00")'];return spec;
+}
+
+// Optional one-time administrator setup. Changes E input validation only, never event values.
+function enableMidnightEventEndValidation(){
+  return withEventLock_(function(){var sh=getEventsManagedSheet_();assertStructuredEventSheetReady_(sh);
+    var spec=midnightEndValidationSpec_(),rule=SpreadsheetApp.newDataValidation().requireFormulaSatisfied(spec.criteriaValues[0]).setAllowInvalid(false).build();
+    sh.getRange(2,5,Math.max(1,sh.getMaxRows()-1),1).setDataValidation(rule);return {ok:true};});
+}
+
+function assertMidnightEventEndReady_(sh,event){
+  if(event.endTime!=='24:00')return;
+  var detail=eventValidationDetailForRow_(sh.getRange(2,5).getDataValidation(),5,2);
+  if(!detail||JSON.stringify(detail.criteriaValues)!==JSON.stringify(midnightEndValidationSpec_().criteriaValues))throw new Error('24:00の予定登録には管理者による終了時刻入力規則の更新が必要です');
 }
 
 function eventValidationDetailForRow_(rule, column, row) {
@@ -1045,7 +1068,7 @@ function normalizeEvent_(input, allowMissingId, allowMissingVersion) {
   if (event.status !== '公開' && event.status !== '終了') throw new Error('状態が不正です');
   if (!eventDateIsValid_(event.date)) throw new Error('開催日が不正です');
   if (event.startTime && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(event.startTime)) throw new Error('開始時刻が不正です');
-  if (event.endTime && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(event.endTime)) throw new Error('終了時刻が不正です');
+  if (event.endTime && event.endTime!=='24:00' && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(event.endTime)) throw new Error('終了時刻が不正です');
   if (event.endTime && !event.startTime) throw new Error('開始時刻が必要です');
   if (event.startTime && event.endTime && event.endTime <= event.startTime) throw new Error('終了時刻が開始時刻より前です');
   if (!event.title || event.title.length > 120) throw new Error('タイトルが不正です');
@@ -1912,6 +1935,7 @@ function createEvent_(body) {
   event.id = newEventId_();
   event.updatedAt = eventNow_();
   event.version = 1;
+  assertMidnightEventEndReady_(sh,event);
   if (findEventRowById_(sh, event.id) !== null) throw new Error('イベントIDが重複しています');
   sh.appendRow(eventRowValues_(event, requestId)[0]);
   flushEventWrite_();
@@ -1936,6 +1960,7 @@ function updateEvent_(body) {
   if (current.version !== event.version) return eventConflict_();
   event.updatedAt = eventNow_();
   event.version = current.version + 1;
+  assertMidnightEventEndReady_(sh,event);
   sh.getRange(rowNumber, 1, 1, EVENT_HEADERS.length).setValues(eventRowValues_(event));
   flushEventWrite_();
   return refreshEventSnapshot_({ ok: true, event: event }, current.version);
@@ -2020,6 +2045,7 @@ function snapshotDigest_(snapshot) {
     calendar: snapshot.calendar,
     counts: snapshot.counts
   };
+  if(snapshot.calendarInfo)payload.calendarInfo=snapshot.calendarInfo;
   var bytes = Utilities.computeDigest(
     Utilities.DigestAlgorithm.SHA_256,
     JSON.stringify(payload),
@@ -2041,12 +2067,19 @@ function calendarSnapshot_(now) {
       // Authenticated snapshot only; never publish these values as plaintext.
       var details = {source:'primary',eventId:event.getId(),allDay:event.isAllDayEvent(),detailsAvailable:false,title:'',location:'',description:''};
       try { details.title=event.getTitle()||'';details.location=event.getLocation()||'';details.description=event.getDescription()||'';details.detailsAvailable=true; } catch (unavailable) { /* Do not infer restricted details. */ }
+      details.availabilityKnown=false;details.selfStatus='';details.transparency='';details.status='confirmed';
+      try {details.selfStatus=String(event.getMyStatus()).toLowerCase();details.transparency=String(event.getTransparency()).toLowerCase();details.availabilityKnown=['opaque','transparent'].indexOf(details.transparency)!==-1&&['yes','no','maybe','invited','owner'].indexOf(details.selfStatus)!==-1;} catch(unavailableStatus){ /* Unknown busy information must not confirm availability. */ }
       return [
         Utilities.formatDate(event.getStartTime(), EVENT_TIMEZONE, "yyyy-MM-dd'T'HH:mm"),
         Utilities.formatDate(event.getEndTime(), EVENT_TIMEZONE, "yyyy-MM-dd'T'HH:mm"),
         details
       ];
     });
+}
+
+function calendarCoverage_(now,rows){
+  var today=Utilities.formatDate(now,EVENT_TIMEZONE,'yyyy-MM-dd'),start=new Date(today+'T00:00:00+09:00');
+  return {source:'primary',fetchedAt:isoWithOffset_(now,EVENT_TIMEZONE),rangeStart:isoWithOffset_(start,EVENT_TIMEZONE),rangeEnd:isoWithOffset_(new Date(start.getTime()+MATERIAL_SNAPSHOT_DAYS*86400000),EVENT_TIMEZONE),complete:rows.every(function(r){return r[2]&&r[2].availabilityKnown===true;})};
 }
 
 function encodeSnapshot_(snapshot) {
@@ -2069,6 +2102,7 @@ function refreshMaterialSnapshotAtUnlocked_(now, allowMigrationStaging) {
     events: readStructuredEvents_(!!allowMigrationStaging),
     calendar: calendarSnapshot_(now)
   };
+  snapshot.calendarInfo=calendarCoverage_(now,snapshot.calendar);
   snapshot.counts = {
     contacts: snapshot.contacts.length,
     events: snapshot.events.length,
@@ -2145,7 +2179,7 @@ function installMaterialSnapshotTrigger() {
     var data=empty(),ids=new Set(),names=new Set();
     input.persons.forEach(function(p){if(!p||typeof p.id!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(p.id)||ids.has(p.id)||typeof p.name!=='string'||!p.name.trim()||names.has(p.name)||p.name.length>200||!Number.isInteger(p.row)||p.row<2)throw Error('人物IDが不正です');ids.add(p.id);names.add(p.name);data.persons.push({id:p.id,name:p.name,row:p.row});});
     if(Object.keys(input.goals).length>120)throw Error('目標月が多すぎます');
-    Object.keys(input.goals).forEach(function(m){var g=input.goals[m];if(!month(m)||!g||typeof g!=='object')throw Error('目標月が不正です');var out={prospects:null,metrics:{}};if(g.prospects!==null&&(!Number.isInteger(g.prospects)||g.prospects<1||g.prospects>10000))throw Error('人数目標が不正です');out.prospects=g.prospects;keys.forEach(function(k){var n=g.metrics&&g.metrics[k];if(n!==null&&n!==undefined&&(!Number.isInteger(n)||n<1||n>10000))throw Error('指標目標が不正です');out.metrics[k]=n===undefined?null:n;});data.goals[m]=out;});
+    Object.keys(input.goals).forEach(function(m){var g=input.goals[m];if(!month(m)||!g||typeof g!=='object')throw Error('目標月が不正です');var out={prospects:null,metrics:{}};if(g.prospects!==null&&(!Number.isInteger(g.prospects)||g.prospects<1||g.prospects>10000))throw Error('人数目標が不正です');out.prospects=g.prospects;keys.forEach(function(k){var n=g.metrics&&g.metrics[k];if(n!==null&&n!==undefined&&(!Number.isInteger(n)||n<0||n>10000))throw Error('指標目標が不正です');out.metrics[k]=n===undefined?null:n;});data.goals[m]=out;});
     var records=new Set();input.records.forEach(function(r){if(!r||typeof r.id!=='string'||!/^[a-zA-Z0-9-]{16,80}$/.test(r.id)||records.has(r.id)||!ids.has(r.personId)||!keys.includes(r.kind)||!statuses.includes(r.status)||!date(r.date)||!date(r.dueDate)||typeof r.purpose!=='string'||!r.purpose.trim()||r.purpose.length>500||typeof r.outcomeConfirmed!=='boolean'||typeof r.newPersonForMonth!=='boolean')throw Error('行動記録が不正です');if(r.outcomeConfirmed&&(r.kind!=='introductions'||r.status!=='completed'))throw Error('紹介につながった確認は紹介の実施後に記録してください');records.add(r.id);data.records.push({id:r.id,personId:r.personId,kind:r.kind,status:r.status,date:r.date,dueDate:r.dueDate,purpose:r.purpose,outcomeConfirmed:r.outcomeConfirmed,newPersonForMonth:r.newPersonForMonth});});
     var missions=input.missions===undefined?[]:input.missions,missionIds=new Set();
     if(!Array.isArray(missions)||missions.length>120)throw Error('週ミッションが不正です');
@@ -2187,11 +2221,11 @@ function installMaterialSnapshotTrigger() {
     var end=new Date(m+'-01T00:00:00Z');end.setUTCMonth(end.getUTCMonth()+1);end.setUTCDate(0);var endDate=end.toISOString().slice(0,10);
     var remainingDays=m<today.slice(0,7)?0:Math.round((end-new Date((m===today.slice(0,7)?today:m+'-01')+'T00:00:00Z'))/86400000)+1;
     var untilSunday=7-((new Date(today+'T00:00:00Z').getUTCDay()+6)%7),weekDays=m===today.slice(0,7)?Math.min(remainingDays,untilSunday):Math.min(remainingDays,7);
-    var confirmed=records.filter(function(r){return r.status==='confirmed'&&r.date>=today&&r.date<=endDate;});
+    var confirmed=records.filter(function(r){return r.status==='confirmed'&&r.date>=today&&r.date<=endDate&&r.dueDate>=today;});
     var futurePeople=new Set(confirmed.filter(function(r){return r.kind==='introductions'&&!prospects.has(r.personId);}).map(function(r){return r.personId;}));
     var metrics={};keys.forEach(function(k){
       var base=report&&report.values?report.values[k]:null;base=Number.isInteger(base)&&base>=0?base:null;
-      var goal=g?g.metrics[k]:report&&report.goals?report.goals[k]:null;goal=Number.isInteger(goal)&&goal>0?goal:null;
+      var goal=g?g.metrics[k]:report&&report.goals?report.goals[k]:null;goal=Number.isInteger(goal)&&goal>=0?goal:null;
       var rows=completed.filter(function(r){return r.kind===k;}),extra=rows.filter(function(r){return report&&date(report.activityDate)&&r.date>report.activityDate&&(!personMetrics.includes(k)||r.newPersonForMonth);});
       var held=rows.length-extra.length,additional=count(extra,k),actual=base===null?null:base+additional,gap=actual===null||goal===null?null:Math.max(0,goal-actual);
       var booked=confirmed.filter(function(r){return r.kind===k;}),bookedCount=count(booked,k);

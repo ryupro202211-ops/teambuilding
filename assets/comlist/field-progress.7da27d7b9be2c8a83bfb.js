@@ -1,3 +1,4 @@
+
 var FIELD_METRICS = [
   ["orientation", "オリエン"], ["introductions", "紹介"], ["individual", "個別"],
   ["first_individual", "初個別"], ["new_friends", "新友達"]
