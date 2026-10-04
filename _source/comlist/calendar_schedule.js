@@ -24,7 +24,8 @@ function normalizeCalendar(rows) {
     if (!meta || meta.source !== 'primary' || typeof meta.allDay !== 'boolean' || typeof meta.detailsAvailable !== 'boolean') throw Error('Invalid calendar metadata');
     const eventId = text(meta.eventId, 500);
     if (!eventId) throw Error('Missing calendar identity');
-    const id = 'calendar:' + eventId;
+    // CalendarApp shares one iCal UID across recurring occurrences. Start makes identity stable across fetch windows.
+    const id = 'calendar:' + eventId + '@' + start;
     if (seen.has(id)) throw Error('Duplicate calendar identity');
     seen.add(id);
     const available = meta.detailsAvailable;

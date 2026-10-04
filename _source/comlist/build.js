@@ -606,17 +606,24 @@ async function fullBuild() {
   const leaked = contacts
     .map((c) => c["名前(あだ名)"])
     .filter((n) => n && n !== "(名前なし)" && n.length >= 3 && html.indexOf(n) !== -1);
-  if (leaked.length) errs.push("平文の名前が混入: " + leaked.slice(0, 3).join(", "));
+  if (leaked.length) errs.push("平文の名前が混入: " + leaked.length + '件');
+  // Curated application events are intentionally public; matching titles do not expose a private association.
+  const publicEventTitles = new Set(appEvents.map(event => event.title));
   const leakedTaskTitles = dailyTasks.tasks.concat(dailyTasks.resolved || [])
-    .map((task) => task.title)
-    .filter((title) => title && title.length >= 3 && html.indexOf(title) !== -1);
-  if (leakedTaskTitles.length) errs.push("平文のタスク名が混入: " + leakedTaskTitles.slice(0, 3).join(", "));
-  const calendarSecrets = (dailyTasks.calendar || []).flatMap(event => [event.title, event.location, event.description]);
-  if (calendarSecrets.some(value => typeof value === 'string' && value.length >= 3 && !['予定名未取得','無題の予定'].includes(value) && html.includes(value))) errs.push('平文のカレンダー詳細が混入');
+    .filter(task => task.title && task.title.length >= 3 && html.includes(task.title) &&
+      !(task.type === 'calendar' && publicEventTitles.has(task.title)))
+    .map(task => task.title);
+  if (leakedTaskTitles.length) errs.push('平文のタスク名が混入: ' + leakedTaskTitles.length + '件');
+  const calendarDetails = (dailyTasks.calendar || []).concat(!retained ? (calendar || []).map(row => row[2] || {}) : []);
+  const calendarSecrets = calendarDetails.flatMap(event => [
+    {value:event.title, alreadyPublic:publicEventTitles.has(event.title)},
+    {value:event.location, alreadyPublic:false}, {value:event.description, alreadyPublic:false}
+  ]);
+  if (calendarSecrets.some(item => !item.alreadyPublic && typeof item.value === 'string' && item.value.length >= 3 && !['予定名未取得','無題の予定'].includes(item.value) && html.includes(item.value))) errs.push('平文のカレンダー詳細が混入');
   const leakedTaskUrls = dailyTasks.tasks
     .map((task) => task.url)
     .filter((url) => url && html.indexOf(url) !== -1);
-  if (leakedTaskUrls.length) errs.push("平文のタスクURLが混入: " + leakedTaskUrls.slice(0, 3).join(", "));
+  if (leakedTaskUrls.length) errs.push("平文のタスクURLが混入: " + leakedTaskUrls.length + '件');
   // 書き込みトークンらしき文字列が無いこと（API_URL は可）
   if (/API_TOKEN\s*[:=]/.test(html)) errs.push("API_TOKEN らしき文字列が混入");
   if (errs.length) { console.error("検証NG:\n - " + errs.join("\n - ")); process.exit(1); }

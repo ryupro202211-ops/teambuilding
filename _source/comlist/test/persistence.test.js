@@ -85,3 +85,8 @@ test('switching away during a schedule write still protects its object from a la
   await new Promise(r=>setImmediate(r));assert.equal(data(w)[0]['アクション日'],'2026/01/03');
 });
 
+
+test('same-day cached edits cannot hide newly published read-only friendship advice',async t=>{
+ const w=app(t);await w.initializeSavedState('fixture-pass','2026-01-01');w.eval('DATA[0]["仕事(O)"]="cached edit"');await w.persistSavedState();
+ const v=app(t,snapshot(w));v.eval('DATA[0]["仲間づくりアドバイス"]="new published advice"');await v.initializeSavedState('fixture-pass','2026-01-01');assert.equal(data(v)[0]['仲間づくりアドバイス'],'new published advice');assert.equal(data(v)[0]['仕事(O)'],'cached edit');
+});

@@ -15,5 +15,11 @@ test('旧時刻配列では確認済み原稿を保持し、権限不足の詳�
  const e=normalizeCalendar([row('restricted','2026-10-04T09:00','2026-10-04T10:00',{detailsAvailable:false})])[0];assert.equal(e.title,'予定名未取得');assert.equal(e.location,'');assert.equal(e.description,'');
 });
 test('本人メイン以外・不正日付・逆転・重複IDを拒否し、空の原本は古い予定を消す',()=>{
- assert.throws(()=>normalizeCalendar([row('x','2026-02-30T09:00','2026-03-01T10:00')]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T10:00','2026-10-04T09:00')]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T09:00','2026-10-04T10:00',{source:'shared'})]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T09:00','2026-10-04T10:00'),row('x','2026-10-04T11:00','2026-10-04T12:00')]));assert.deepEqual(applyCalendarSchedule(base,[],'2026-10-04').calendar,[]);
+ assert.throws(()=>normalizeCalendar([row('x','2026-02-30T09:00','2026-03-01T10:00')]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T10:00','2026-10-04T09:00')]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T09:00','2026-10-04T10:00',{source:'shared'})]));assert.throws(()=>normalizeCalendar([row('x','2026-10-04T09:00','2026-10-04T10:00'),row('x','2026-10-04T09:00','2026-10-04T10:00')]));assert.deepEqual(applyCalendarSchedule(base,[],'2026-10-04').calendar,[]);
+});
+
+test('recurring UID occurrences stay distinct and stable across fetch windows',()=>{
+ const first=row('series','2026-10-04T09:00','2026-10-04T10:00'),second=row('series','2026-10-11T09:00','2026-10-11T10:00');
+ const both=normalizeCalendar([first,second]);assert.notEqual(both[0].id,both[1].id);assert.equal(normalizeCalendar([first])[0].id,both[0].id);assert.equal(normalizeCalendar([second])[0].id,both[1].id);
+ const out=applyCalendarSchedule(base,[first,second],'2026-10-04');assert.equal(out.calendar.length,1);assert.equal(out.tasks.filter(t=>t.type==='calendar').length,1);
 });
