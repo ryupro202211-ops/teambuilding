@@ -90,7 +90,7 @@ test('encrypts contacts and daily tasks together without leaking task text', asy
   assert.equal(run.status, 0, run.stderr);
   const html = require("../app_sources").readApp(outPath);
   assert.ok(!html.includes('Notionの秘密タスク'));
-  assert.ok(html.includes('連絡する人'));
+  assert.ok(!html.includes('briefSection("contacts",'));
   assert.ok(!html.includes('https://www.notion.so/private-page'));
   assert.match(html, /let DAILY_TASKS = \[\];/);
   assert.match(html, /setView\("today"\)/);
