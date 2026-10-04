@@ -272,6 +272,7 @@ function fmtT(m) { return String(Math.floor(m / 60)).padStart(2, "0") + ":" + St
 
 // 予定 [startISO,endISO]（分単位 wall time, タイムゾーンなし）を、その日 dayStr の [0,1440] にクランプ
 function evMinOnDay(dayStr, ev) {
+  if (ev[2] && ev[2].allDay === true) return null; // Keep all-day events out of free-slot calculations.
   const [es, ee] = ev;
   const dayS = dayStr + "T00:00", dayE = dayStr + "T23:59";
   if (ee <= dayS || es > dayE) return null;      // その日にかからない
@@ -480,7 +481,7 @@ async function fullBuild() {
     );
   }
   if (!retained && !ARGS.tasks) throw new Error("通常ビルドには --tasks が必要です");
-  const dailyTasks = retained ? validateDailyTasks({
+  let dailyTasks = retained ? validateDailyTasks({
     ...retained.dailyTasks,
     tasks: retained.dailyTasks.tasks.filter(task => task.type !== "contact").map(task => {
       if (task.section != null) return task;
@@ -496,6 +497,7 @@ async function fullBuild() {
     TODAY,
     { requireSection: true }
   );
+  if (!retained) dailyTasks = validateDailyTasks(require('./calendar_schedule').applyCalendarSchedule(dailyTasks, calendar, TODAY), TODAY, { requireSection: true });
   dailyTasks.tasks = dailyTasks.tasks.filter((task) => task.type !== "contact");
 
   // 全レコードに _row があること。
@@ -606,6 +608,8 @@ async function fullBuild() {
     .map((task) => task.title)
     .filter((title) => title && title.length >= 3 && html.indexOf(title) !== -1);
   if (leakedTaskTitles.length) errs.push("平文のタスク名が混入: " + leakedTaskTitles.slice(0, 3).join(", "));
+  const calendarSecrets = (dailyTasks.calendar || []).flatMap(event => [event.title, event.location, event.description]);
+  if (calendarSecrets.some(value => typeof value === 'string' && value.length >= 3 && !['予定名未取得','無題の予定'].includes(value) && html.includes(value))) errs.push('平文のカレンダー詳細が混入');
   const leakedTaskUrls = dailyTasks.tasks
     .map((task) => task.url)
     .filter((url) => url && html.indexOf(url) !== -1);

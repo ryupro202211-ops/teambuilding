@@ -35,11 +35,13 @@ function gas() {
   let frozenRows = 1;
   let filter = { getRange: () => ({ getRow: () => 1, getColumn: () => 1, getNumRows: () => 100, getNumColumns: () => 13 }) };
   const timed = {
+    getId: () => 'fixture-timed', getTitle: () => 'テスト会議', getLocation: () => 'テスト会場', getDescription: () => '確認する詳細',
     isAllDayEvent: () => false,
     getStartTime: () => new Date("2026-09-22T18:00:00+09:00"),
     getEndTime: () => new Date("2026-09-22T19:00:00+09:00")
   };
   const allDay = {
+    getId: () => 'fixture-all-day', getTitle: () => 'テスト終日', getLocation: () => '', getDescription: () => '',
     isAllDayEvent: () => true,
     getStartTime: () => new Date("2026-09-23T00:00:00+09:00"),
     getEndTime: () => new Date("2026-09-24T00:00:00+09:00")
@@ -225,10 +227,11 @@ test("GAS snapshot contains contacts, structured events and timed calendar event
   assert.equal(snapshot.events[0].id, "evt_01JTEST00000000000000001");
   assert.equal("eventRows" in snapshot, false);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.calendar)), [
-    ["2026-09-22T18:00", "2026-09-22T19:00"]
+    ["2026-09-22T18:00", "2026-09-22T19:00", {source:'primary',eventId:'fixture-timed',allDay:false,detailsAvailable:true,title:'テスト会議',location:'テスト会場',description:'確認する詳細'}],
+    ["2026-09-23T00:00", "2026-09-24T00:00", {source:'primary',eventId:'fixture-all-day',allDay:true,detailsAvailable:true,title:'テスト終日',location:'',description:''}]
   ]);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.counts)), {
-    contacts: 1, events: 1, calendar: 1
+    contacts: 1, events: 1, calendar: 2
   });
   assert.equal(snapshot.digest, snapshotDigest(snapshot));
   assert.equal(props.get("MATERIAL_SNAPSHOT_COUNT_CONTACTS"), "1");

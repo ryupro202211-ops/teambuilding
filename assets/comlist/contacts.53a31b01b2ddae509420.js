@@ -1,3 +1,4 @@
+
 let CREATE_REQUEST_ID = "";
 let CREATE_BUSY = false;
 let CONTACT_REVISION = 0;

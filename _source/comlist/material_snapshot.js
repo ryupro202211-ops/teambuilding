@@ -53,6 +53,7 @@ function validateSnapshot(snapshot, options = {}) {
     throw new Error("GASスナップショットの素材形式が不正です");
   }
   const events = validateEventList(snapshot.events);
+  require('./calendar_schedule').normalizeCalendar(snapshot.calendar);
   const actualCounts = {
     contacts: snapshot.contacts.length,
     events: events.length,

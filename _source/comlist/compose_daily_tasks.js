@@ -72,7 +72,7 @@ function notionTask(item, today) {
   return task;
 }
 
-function composeDailyTasks(draft, { today, history }) {
+function composeDailyTasks(draft, { today, history, calendarMaterial }) {
   if (!ISO.test(String(today))) throw new Error('--today は YYYY-MM-DD');
   const notion = Array.isArray(draft && draft.notion) ? draft.notion : [];
   const calendar = Array.isArray(draft && draft.calendar) ? draft.calendar : [];
@@ -108,7 +108,7 @@ function composeDailyTasks(draft, { today, history }) {
   // Gmail はまだ入っていないので、区分の契約だけを先に検査する（Gmail統合後に全体をもう一度検査する）
   validateDailyTasks(Object.assign({}, out, { sources: Object.assign({}, out.sources, { gmail: { ok: true, checkedThreads: 0, uniqueThreads: 0 } }) }),
     today, { requireSection: true });
-  return out;
+  return calendarMaterial === undefined ? out : require('./calendar_schedule').applyCalendarSchedule(out, calendarMaterial, today);
 }
 
 function main(argv) {
@@ -117,7 +117,9 @@ function main(argv) {
   const draftPath = arg('draft', path.join(__dirname, '_work', 'daily_draft.json'));
   const outPath = arg('out', path.join(__dirname, '_work', 'daily_tasks.json'));
   const history = JSON.parse(fs.readFileSync(path.join(__dirname, '_quote_history.json'), 'utf8'));
-  const out = composeDailyTasks(JSON.parse(fs.readFileSync(draftPath, 'utf8')), { today, history });
+  const calendarPath = arg('calendar-material', path.join(path.dirname(draftPath), 'calendar.json'));
+  const calendarMaterial = fs.existsSync(calendarPath) ? JSON.parse(fs.readFileSync(calendarPath, 'utf8')) : undefined;
+  const out = composeDailyTasks(JSON.parse(fs.readFileSync(draftPath, 'utf8')), { today, history, calendarMaterial });
   const tmp = outPath + '.tmp';
   fs.writeFileSync(tmp, JSON.stringify(out, null, 2) + '\n');
   fs.renameSync(tmp, outPath);

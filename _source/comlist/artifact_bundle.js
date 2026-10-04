@@ -17,6 +17,7 @@ function writeBundle(out,expanded,assetRoot,io=fs){
     });
     const ref=asset(name||'comlist','css',css);return '<link data-comlist="'+(name||'comlist')+'" rel="stylesheet" href="'+ref+'">';
   });
+  html=html.replace(/(<img\b[^>]*data-comlist-image="([a-z-]+)"[^>]*\bsrc=")([^"/]+\.(?:png|jpg|webp))("[^>]*>)/g,(_m,before,name,image,after)=>before+asset(name,path.extname(image).slice(1),io.readFileSync(localFile(assetRoot,image)))+after);
   html=html.replace(/<script(?: data-comlist="([a-z-]+)")?>([\s\S]*?)<\/script>/g,(_m,name,js)=>{
     if(name==='lock'){
       const match=js.match(/let DATA = \[\];\s*let DAILY_TASKS = \[\];\s*const ENC = (\{[\s\S]*?\});/);

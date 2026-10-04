@@ -567,12 +567,16 @@ function readContacts_() {
   var last = sh.getLastRow();
   if (last < 2) return [];
   var values = sh.getRange(2, 1, last - 1, COLUMNS.length).getValues();
+  // AA is read-only and deliberately outside COLUMNS/EDITABLE and contact CAS.
+  var adviceReady=(!sh.getMaxColumns||sh.getMaxColumns()>=27)&&cellText_(sh.getRange(1,27,1,1).getValues()[0][0])==='仲間づくりアドバイス';
+  var advice=adviceReady?sh.getRange(2,27,last-1,1).getValues():[];
   var tracking=contactTrackingReady_(sh),meta=tracking?sh.getRange(2,CONTACT_TRACKING_START_COLUMN,last-1,CONTACT_TRACKING_COLUMN_COUNT).getValues():[];
   var records = [];
   values.forEach(function (row, i) {
     var cat = cellText_(row[0]);
     if (CONFIG.CATEGORIES.indexOf(cat) === -1) return;
     var o = { _row: i + 2, _version:contactVersionFromCells_(row,tracking?meta[i]:null) };
+    if(adviceReady&&cellText_(advice[i][0]))o['仲間づくりアドバイス']=cellText_(advice[i][0]);
     if(tracking&&/^(contacted|waiting|planning)$/.test(cellText_(meta[i][0])))o._contactState={status:cellText_(meta[i][0]),date:cellText_(meta[i][1])};
     for (var c = 0; c < COLUMNS.length; c++) {
       var v = cellText_(row[c]);
@@ -2032,12 +2036,15 @@ function calendarSnapshot_(now) {
   var start = new Date(today + 'T00:00:00+09:00');
   var end = new Date(start.getTime());
   end.setDate(end.getDate() + MATERIAL_SNAPSHOT_DAYS);
-  return CalendarApp.getDefaultCalendar().getEvents(start, end)
-    .filter(function (event) { return !event.isAllDayEvent(); })
+    return CalendarApp.getDefaultCalendar().getEvents(start, end)
     .map(function (event) {
+      // Authenticated snapshot only; never publish these values as plaintext.
+      var details = {source:'primary',eventId:event.getId(),allDay:event.isAllDayEvent(),detailsAvailable:false,title:'',location:'',description:''};
+      try { details.title=event.getTitle()||'';details.location=event.getLocation()||'';details.description=event.getDescription()||'';details.detailsAvailable=true; } catch (unavailable) { /* Do not infer restricted details. */ }
       return [
         Utilities.formatDate(event.getStartTime(), EVENT_TIMEZONE, "yyyy-MM-dd'T'HH:mm"),
-        Utilities.formatDate(event.getEndTime(), EVENT_TIMEZONE, "yyyy-MM-dd'T'HH:mm")
+        Utilities.formatDate(event.getEndTime(), EVENT_TIMEZONE, "yyyy-MM-dd'T'HH:mm"),
+        details
       ];
     });
 }

@@ -546,9 +546,12 @@ test("取得開始後に状態変更が完了した場合、古い取得応答�
 });
 
 test("IDのない旧形式イベントを選ぶと、それぞれのイベントが招待文に入る", async (t) => {
+  const future = new Date();future.setDate(future.getDate()+1);
+  const firstDate=(future.getMonth()+1)+'/'+future.getDate();future.setDate(future.getDate()+1);
+  const secondDate=(future.getMonth()+1)+'/'+future.getDate();
   const legacyEvents = [
-    { d: "10/3", dow: "土", t: "19:00-20:00", title: "一つ目の旧形式イベント" },
-    { d: "10/4", dow: "日", t: "19:00-20:00", title: "二つ目の旧形式イベント" },
+    { d: firstDate, t: "19:00-20:00", title: "一つ目の旧形式イベント" },
+    { d: secondDate, t: "19:00-20:00", title: "二つ目の旧形式イベント" },
   ];
   const { dom } = await loadApp({ events: legacyEvents, token: "" });
   t.after(() => dom.window.close());
