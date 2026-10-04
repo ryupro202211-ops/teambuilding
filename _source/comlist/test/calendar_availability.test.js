@@ -3,8 +3,10 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),A=require
 const now=Date.parse('2026-10-04T10:00:00+09:00'),d='2026-10-04',prefs={weekday:[[480,1320]],weekend:[[480,1320]],buffer:0,excludedDates:[],confirmed:true};
 const event=(a,b,extra={})=>[a,b,{allDay:false,status:'confirmed',selfStatus:'yes',transparency:'opaque',...extra}];
 function snapshot(events=[],extra={}){return {events,info:{source:'primary',fetchedAt:new Date(now).toISOString(),rangeStart:d+'T00:00:00+09:00',rangeEnd:'2026-11-05T00:00:00+09:00',complete:true,...extra}};}
-test('90 minutes qualifies, 89 does not, long gaps produce one candidate',()=>{
- assert.equal(A.compute(snapshot(),prefs,now).slots.length,8);
+test('90 minutes qualifies, 89 does not, long gaps produce consecutive candidates',()=>{
+ const slots=A.compute(snapshot(),prefs,now).slots;assert.equal(slots.length,63);
+ const firstDay=slots.filter(s=>s.date===d);assert.equal(firstDay.length,8);
+ assert.ok(slots.every(s=>s.end-s.start===90*60000));assert.ok(firstDay.slice(1).every((s,i)=>s.start===firstDay[i].end));
  const p={...prefs,weekend:[[600,689]],weekday:[],excludedDates:[]};assert.equal(A.compute(snapshot(),p,now).slots.length,0);
  p.weekend=[[600,690]];assert.equal(A.compute(snapshot(),p,now).slots.filter(s=>s.date===d).length,1);
 });
@@ -28,7 +30,19 @@ test('settings must be confirmed; unknown buffer and invalid times rejected',()=
  assert.throws(()=>A.compute(snapshot(),A.defaults(),now));assert.throws(()=>A.settings({...prefs,buffer:null}));assert.throws(()=>A.settings({...prefs,weekday:[[900,600]]}));assert.throws(()=>A.validate(snapshot([event(d+'T10:00',d+'T09:00')])));
 });
 test('overlapping activity windows do not generate overlapping candidates',()=>{
- const p={...prefs,weekend:[[600,720],[690,900]]};const s=A.compute(snapshot(),p,now).slots.filter(s=>s.date===d);assert.equal(s.length,1);
+ const p={...prefs,weekend:[[600,720],[690,900]]};const s=A.compute(snapshot(),p,now).slots.filter(s=>s.date===d);assert.equal(s.length,3);assert.ok(s.slice(1).every((slot,i)=>slot.start>=s[i].end));
+});
+
+test('Friday evening includes consecutive slots after 19:30 through midnight',()=>{
+ const p={...A.defaults(),buffer:0,confirmed:true};const slots=A.compute(snapshot(),p,now).slots.filter(s=>s.date==='2026-10-09'&&s.start>=Date.parse('2026-10-09T18:00:00+09:00'));
+ assert.deepEqual(slots.map(s=>new Date(s.start+9*3600000).toISOString().slice(11,16)),['18:00','19:30','21:00','22:30']);assert.equal(slots.at(-1).end,Date.parse('2026-10-10T00:00:00+09:00'));
+});
+
+test('consecutive slots respect busy events and buffer and omit short remainders',()=>{
+ const p={...A.defaults(),buffer:15,confirmed:true},busy=[event('2026-10-09T20:00','2026-10-09T21:00')];
+ const slots=A.compute(snapshot(busy),p,now).slots.filter(s=>s.date==='2026-10-09'&&s.start>=Date.parse('2026-10-09T18:00:00+09:00'));
+ assert.deepEqual(slots.map(s=>new Date(s.start+9*3600000).toISOString().slice(11,16)),['18:00','21:15']);
+ assert.ok(slots.every(s=>s.end<=Date.parse('2026-10-09T19:45:00+09:00')||s.start>=Date.parse('2026-10-09T21:15:00+09:00')));
 });
 test('JST midnight boundary uses the new local day and 90 minutes may end at midnight',()=>{
  const ms=Date.parse('2026-10-04T15:00:00Z');assert.equal(A.date(ms),'2026-10-05');
