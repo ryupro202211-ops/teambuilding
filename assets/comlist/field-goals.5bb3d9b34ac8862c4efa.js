@@ -1,3 +1,4 @@
+
 'use strict';
 var FIELD_GOALS_STATE={goals:{},persons:[],records:[]};
 var FIELD_GOALS_VERSION=null;
