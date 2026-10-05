@@ -8,7 +8,7 @@ const runtime=process.env.CODEX_NODE_MODULES||'C:/Users/ryupr/.cache/codex-runti
 const {chromium}=require(path.join(runtime,'playwright'));
 async function main(){
   const day=new Date();const date=day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
-  let contacts=[{_row:2,_version:'fixture-v1','カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','アクション日':date}];
+  let contacts=[{_row:2,_version:'fixture-v1','カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','アクション日':date,'メモ':'折りたたみのテスト\n全文は開いたときに表示'}];
   let events=[{id:'evt_browserfixture00000001',status:'公開',date,startTime:'19:00',endTime:'20:00',title:'テストイベント',version:1}];
   const daily={date,dayLabel:date,tasks:[{id:'notion:fixture',type:'notion',title:'テストタスク',section:'today',due:date,overdueDays:0}],sources:{}};
   const enc=await encryptForTest({contacts,dailyTasks:daily},'fixture-pass');
@@ -66,6 +66,9 @@ async function main(){
     await page.locator('[data-fc-day="'+plannedDay+'"]').click();await page.locator('[data-field-day-edit]').click();await page.locator('[name=status]').selectOption('cancelled');await page.locator('#field-goal-dialog button[type=submit]').click();
     await page.waitForFunction(()=>FIELD_GOALS_PENDING===null&&FIELD_GOALS_STATE.records[0].status==='cancelled');assert.equal(fieldState.records[0].id,recordId);
     await page.locator('[data-view="today"]').click();
+    await page.locator('[data-view="garden"]').click();await page.locator('.plant').first().click();
+    const memo=page.locator('#gdpanel details.memo');assert.equal(await memo.evaluate(el=>el.open),false);await memo.locator('summary').click();assert.equal(await memo.evaluate(el=>el.open),true);await memo.locator('summary').click();assert.equal(await memo.evaluate(el=>el.open),false);
+    await page.screenshot({path:path.join(target,'memo-collapsed.png'),fullPage:true});await page.locator('[data-view="today"]').click();
     assert.deepEqual(await page.locator('#today-dashboard > [data-section]').evaluateAll(es=>es.slice(0,2).map(e=>e.dataset.section)),['today','schedule']);
     await page.locator('[data-view="garden"]').click();await page.locator('.plant').first().click();await page.locator('#ge-open').click();await page.locator('#ge-ad').fill(date);await page.locator('#ge-nw').fill('保存後も残る予定');await page.locator('#ge-save').click();await page.waitForFunction(()=>!PANEL_EDIT);await page.waitForFunction(()=>!!localStorage.getItem('comlist-cache:v1:/comlist.html'));
     offline=true;await page.reload();await unlock();await page.locator('[data-view="garden"]').click();assert.match(await page.locator('#app').textContent(),/保存後も残る予定/);

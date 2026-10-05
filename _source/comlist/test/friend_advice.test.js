@@ -1,5 +1,10 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto'),{JSDOM}=require('jsdom');
+test('人物カードのメモは初期状態で閉じ、全文と改行を保持して安全に表示する',t=>{
+ const source=require('../app_sources').readApp(path.resolve(__dirname,'../_assets/list.html')).replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');const dom=new JSDOM(source,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());
+ const memo='First line\n<img src=x onerror="alert(1)">';const box=dom.window.document.createElement('div');box.innerHTML=dom.window.cardHTML({'カテゴリー':'A','名前(あだ名)':'Fixture','メモ':memo});
+ const section=box.querySelector('details.memo');assert.ok(section);assert.equal(section.open,false);assert.equal(section.querySelector('summary').textContent,'メモ・報連相');assert.equal(section.querySelector('.memo-body').textContent,memo);assert.equal(section.querySelector('img'),null);
+});
 function gas(header='仲間づくりアドバイス'){
  const writes=[],ranges=[],rows=[Array(45).fill(''),Array(45).fill(''),Array(45).fill('')];rows[0][26]=header;rows[1][0]='A';rows[1][2]='Fixture person';rows[1][25]='メモ原本';rows[1][26]='本人の希望：まだ未確認\n次に聞く質問：どんな生活を望みますか';rows[2][0]='B';rows[2][2]='Fixture person 2';
  const sh={getLastRow:()=>rows.length,getMaxColumns:()=>45,getRange(r,c,n=1,m=1){ranges.push({r,c,n,m});return {getValues:()=>Array.from({length:n},(_,i)=>Array.from({length:m},(_,j)=>rows[r-1+i]?.[c-1+j]??'')),setValues:v=>writes.push({r,c,v})};}};
