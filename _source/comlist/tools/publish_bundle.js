@@ -13,6 +13,7 @@ function publishBundle(source,target){
   rootFiles.push('field_goals_api.gs');
   rootFiles.push('calendar_schedule.js');
   if(fs.existsSync(path.join(source,'_assets/dream-vision-board.png')))copy(source,'_assets/dream-vision-board.png',sourceTarget);
+  if(fs.existsSync(path.join(source,'_assets/my-best-life-icon-v1.png')))copy(source,'_assets/my-best-life-icon-v1.png',sourceTarget);
   for(const ref of rootFiles)if(fs.existsSync(path.join(source,ref)))copy(source,ref,sourceTarget);
   function collect(dir){if(!fs.existsSync(path.join(source,dir)))return;for(const entry of fs.readdirSync(path.join(source,dir),{withFileTypes:true})){const ref=dir+'/'+entry.name;if(entry.isSymbolicLink())throw Error('source symlink refused');if(entry.isDirectory())collect(ref);else if(/\.(?:js|cjs|css|html|json|md|png|jpg|ps1)$/.test(entry.name))copy(source,ref,sourceTarget);}}
   for(const dir of ['_assets/js','_assets/css','test','tools'])collect(dir);

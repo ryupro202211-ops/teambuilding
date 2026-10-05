@@ -743,3 +743,20 @@ test("イベント選択チェックボックスにイベント名を含むア�
   const parts = EVENT_DATE.split("-");
   assert.ok(checkbox.getAttribute("aria-label").includes(Number(parts[1]) + "/" + Number(parts[2])));
 });
+
+
+test("終了時刻は時刻選択と24:00に対応し、再描画でも保持する", async (t) => {
+  const { dom } = await loadApp({ events: [{ ...EVENT, endTime: "24:00" }] });
+  t.after(() => dom.window.close());
+  await dom.window.openEventEditor(EVENT.id);
+  const doc = dom.window.document;
+  assert.equal(doc.getElementById("eventEndTime").type, "time");
+  assert.equal(doc.getElementById("eventEndDay").value, "24:00");
+  assert.equal(dom.window.readEventForm().endTime, "24:00");
+  dom.window.renderEvents();
+  assert.equal(dom.window.readEventForm().endTime, "24:00");
+  setInput(dom, "eventEndDay", "");
+  setInput(dom, "eventEndTime", "22:15");
+  dom.window.renderEvents();
+  assert.equal(dom.window.readEventForm().endTime, "22:15");
+});

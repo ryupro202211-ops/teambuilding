@@ -49,12 +49,12 @@ test('contact record requires explicit click, cancellation sends nothing, retry 
   const v=app(t,[original],snapshot);await v.initializeSavedState('fixture-pass','2026-10-02');v.fetch=async(_u,o)=>{bodies.push(JSON.parse(o.body));return {json:async()=>({ok:true,row:2,version:'new-version',updated:{},contactState:{status:'waiting',date:'2026-10-02'}})};};
   await v.retryContactAction();assert.equal(bodies[1].requestId,bodies[0].requestId);assert.equal(v.eval('DATA[0]["仕事(O)"]'),'Engineer');assert.equal(v.eval('DATA[0]["次会う日"]'),'2026-11-01');assert.equal(v.eval('DATA[0]["履歴"]'),'9/1 会食');assert.equal(v.eval('DATA[0]._contactState.status'),'waiting');
 });
-test('successful record re-enables panel actions so a subsequent status can be recorded',async t=>{
+test('successful record releases write lock and the removed panel controls stay hidden',async t=>{
   const w=app(t,[person(2)]);w.setWriteToken('fixture');w.confirm=()=>true;
   w.eval('SELECTED=plantKey(DATA[0]);setView("garden")');
   w.fetch=async(_u,o)=>{const b=JSON.parse(o.body);return {json:async()=>({ok:true,row:2,version:'updated',contactState:{status:b.status,date:b.date},updated:{}})};};
   await w.recordContactAction(w.eval('DATA[0]'),'contacted');
-  assert.equal(w.document.querySelector('#gdpanel [data-contact-status="planning"]').disabled,false);
+  assert.equal(w.eval('CONTACT_ACTION_BUSY'),false);assert.equal(w.document.querySelectorAll('#gdpanel [data-contact-status]').length,0);
   await w.recordContactAction(w.eval('DATA[0]'),'planning');assert.equal(w.eval('DATA[0]._contactState.status'),'planning');assert.equal(w.eval('PANEL_EDIT'),true);
 });
 test('recording uses the actual local day even when the published task date is older; full-year history shows the last entry',async t=>{
