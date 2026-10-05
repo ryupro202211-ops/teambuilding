@@ -1,4 +1,5 @@
 
+
 :root { color-scheme: light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -189,7 +190,7 @@ body.view-today #events, body.view-today .toolbar, body.view-today #catfilter,
 body.view-today #foot { display: none; }
 .today-status { font-size: 13px; color: #787774; padding: 6px 2px 10px; }
 .today-dashboard { display: grid; gap: 12px; }
-.today-hero { min-height: 150px; border-radius: 16px; padding: 22px; display: flex; align-items: flex-end; color: #fff; background: linear-gradient(90deg,rgba(13,31,28,.88),rgba(13,31,28,.22)),url("brief-hero-morning-v2.jpg") center/cover no-repeat; box-shadow: 0 14px 30px rgba(19,42,35,.16); }
+.today-hero { min-height: 150px; border-radius: 16px; padding: 22px; display: flex; align-items: flex-end; color: #fff; background: linear-gradient(90deg,rgba(13,31,28,.88),rgba(13,31,28,.22)),url("brief-hero-morning-v2.be700651a5fdce6ec363.jpg") center/cover no-repeat; box-shadow: 0 14px 30px rgba(19,42,35,.16); }
 .today-hero-title { font-size: 25px; font-weight: 800; letter-spacing: .04em; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
 .today-next { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid #cbdcbb; border-radius: 12px; background: #f4f9ed; }
 .today-next-label { font-size: 12px; font-weight: 700; color: #2f6b3a; }
@@ -200,7 +201,7 @@ body.view-today #foot { display: none; }
 .today-card { border: 1px solid #dbead3; border-radius: 12px; background: #fff; padding: 14px 16px; }
 .today-card h2, .today-card h3, .today-card-title { margin: 0 0 10px; font-size: 15px; color: #2f6b3a; display: flex; align-items: center; gap: 8px; }
 .today-card h3 { margin-top: 14px; font-size: 13px; }
-.brief-icon { display: inline-block; width: 28px; height: 28px; flex: none; vertical-align: middle; background-image: url("brief-icons-v2.png"); background-size: 500% 500%; background-repeat: no-repeat; }
+.brief-icon { display: inline-block; width: 28px; height: 28px; flex: none; vertical-align: middle; background-image: url("brief-icons-v2.84a02a3fe017e03daf9e.png"); background-size: 500% 500%; background-repeat: no-repeat; }
 .bi-0 { background-position: 0% 0%; }
 .bi-1 { background-position: 25% 0%; }
 .bi-2 { background-position: 50% 0%; }
@@ -233,12 +234,12 @@ body.view-today #foot { display: none; }
 .today-member { border-color: #aec8e4; background: #eef4fb; }
 .today-member h2 { color: #2a5b93; }
 /* 勝ちの色は金だけに絞る。戦果カードと回復量以外では使わない */
-.victory-icon { display: inline-block; width: 34px; height: 34px; flex: none; background-image: url("victory-icons-v1.png"); background-size: 200% 200%; background-repeat: no-repeat; }
+.victory-icon { display: inline-block; width: 34px; height: 34px; flex: none; background-image: url("victory-icons-v1.7c17fc9f72024978e910.png"); background-size: 200% 200%; background-repeat: no-repeat; }
 .vi-0 { background-position: 0% 0%; }
 .vi-1 { background-position: 100% 0%; }
 .vi-2 { background-position: 0% 100%; }
 .vi-3 { background-position: 100% 100%; }
-.today-victory { border-color: #e2b93b; color: #fff8e2; background: linear-gradient(90deg,rgba(14,26,22,.90),rgba(14,26,22,.34)),url("victory-banner-v1.jpg") center/cover no-repeat; animation: victory-in .6s ease-out 1; }
+.today-victory { border-color: #e2b93b; color: #fff8e2; background: linear-gradient(90deg,rgba(14,26,22,.90),rgba(14,26,22,.34)),url("victory-banner-v1.fbbfe9b2f15530ba4ec1.jpg") center/cover no-repeat; animation: victory-in .6s ease-out 1; }
 .today-victory h2 { color: #ffd964; }
 .today-victory .today-task-title { color: #fff8e2; }
 .today-victory .today-task-detail { color: #d9cfae; }
@@ -495,7 +496,7 @@ h1 { font-size: clamp(25px, 3.3vw, 36px); font-weight: 700; letter-spacing: -.03
 .tab.active { background: var(--green); color: #fff; border: 0; box-shadow: 0 5px 12px #24594412; }
 .tab:hover:not(.active) { background: #e3e8f0; color: var(--ink); }
 .tab { display:flex; align-items:center; gap:10px; }
-.menu-icon { display:inline-block; flex:0 0 32px; width:32px; height:32px; background-image:url("menu-icons-v1.png"); background-size:500% auto; background-repeat:no-repeat; }
+.menu-icon { display:inline-block; flex:0 0 32px; width:32px; height:32px; background-image:url("menu-icons-v1.95717ea09a2366c60bff.png"); background-size:500% auto; background-repeat:no-repeat; }
 .menu-today { background-position:0% 50%; }
 .menu-garden { background-position:25% 50%; }
 .menu-list { background-position:50% 50%; }
@@ -532,7 +533,7 @@ h1 { font-size: clamp(25px, 3.3vw, 36px); font-weight: 700; letter-spacing: -.03
 .plant:hover { transform: translateY(-2px); box-shadow: 0 5px 14px #19233316; }
 .plant.sel { outline: 2px solid var(--green); outline-offset: 2px; box-shadow: 0 7px 16px #35553020; }
 .plant-emoji { font-size: 34px; margin-bottom: 8px; }
-.garden-icon { display:inline-block; width:24px; height:24px; flex-shrink:0; vertical-align:middle; background-image:url("garden-icons-v1.png"); background-size:200% 200%; background-repeat:no-repeat; }
+.garden-icon { display:inline-block; width:24px; height:24px; flex-shrink:0; vertical-align:middle; background-image:url("garden-icons-v1.b7b0e5fcb412dc464afc.png"); background-size:200% 200%; background-repeat:no-repeat; }
 .icon-A { background-position:0 0; }
 .icon-B { background-position:100% 0; }
 .icon-C { background-position:0 100%; }
