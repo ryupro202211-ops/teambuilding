@@ -6,7 +6,7 @@ function app(t,date='2026-10-05T00:08:00+09:00'){
   w.esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   w.eval(fs.readFileSync('_assets/js/calendar-slots.js','utf8'));
   w.CALENDAR_SLOT_PREFS={...w.CalendarAvailability.defaults(),buffer:0,confirmed:true};
-  w.CALENDAR_AVAILABILITY={events:[],info:{source:'primary',complete:true,fetchedAt:new Date(now).toISOString(),rangeStart:new Date(now-86400000).toISOString(),rangeEnd:new Date(now+8*86400000).toISOString()}};
+  w.CALENDAR_AVAILABILITY={events:[],info:{source:'primary',complete:true,fetchedAt:new Date(now).toISOString(),rangeStart:new Date(now-86400000).toISOString(),rangeEnd:new Date(now+32*86400000).toISOString()}};
   return w;
 }
 test('週間カレンダーは月曜から7日表示し、90分枠を時間に対応する位置へ置く',t=>{
@@ -22,7 +22,7 @@ test('月をまたぐ翌週の候補も正しいIDで選べる',t=>{
   const w=app(t,'2026-01-31T08:00:00+09:00');w.renderSlots();w.document.getElementById('slot-week-next').click();
   assert.equal(w.document.querySelector('.slot-week-day').dataset.slotDate,'2026-02-02');
   let selected;w.openSlotDraft=s=>{selected=s;};w.document.querySelector('[data-slot-index]').click();assert.equal(selected.date,'2026-02-02');
-  assert.ok(w.document.getElementById('slot-week-next').disabled);w.document.getElementById('slot-week-prev').click();
+  assert.ok(!w.document.getElementById('slot-week-next').disabled);while(!w.document.getElementById('slot-week-next').disabled)w.document.getElementById('slot-week-next').click();assert.equal(w.document.querySelector('.slot-week-day').dataset.slotDate,'2026-02-23');assert.ok(w.document.querySelector('[data-slot-index]'));while(!w.document.getElementById('slot-week-prev').disabled)w.document.getElementById('slot-week-prev').click();
   assert.equal(w.document.querySelector('.slot-week-day').dataset.slotDate,'2026-01-26');
 });
 test('取得失敗や古い取得では週間カレンダーの候補を表示しない',t=>{
