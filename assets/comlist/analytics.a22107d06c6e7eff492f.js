@@ -1,3 +1,4 @@
+
 function renderAnalytics(){
   var daily=todayData(), date=daily.date || new Date().toLocaleDateString('sv-SE');
   var base=parseDate(date); base.setHours(0,0,0,0);
