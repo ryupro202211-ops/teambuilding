@@ -8,6 +8,22 @@ function page(t,request,realPersistence=false){
 }
 function server(){let state=M.empty(),version='v1',requestId='',writes=0,offline=false,lose=false;const calls=[];return {get state(){return state;},get writes(){return writes;},calls,set offline(v){offline=v;},set lose(v){lose=v;},request(b){calls.push(b);if(offline)throw Error('offline');if(b.action==='fieldGoalsRead')return {ok:true,state:structuredClone(state),version,requestId};if(b.action==='fieldGoalsWrite'){if(b.requestId===requestId)return {ok:true,state:structuredClone(state),version,requestId};if(b.version!==version)return {ok:false,error:'conflict'};state=M.validate(b.state);version='v'+(Number(version.slice(1))+1);requestId=b.requestId;writes++;if(lose){lose=false;throw Error('response lost');}return {ok:true,state:structuredClone(state),version,requestId};}return {ok:false};}};}
 const desired=n=>({goals:{'2026-10':{prospects:n,metrics:{}}},persons:[],records:[]});
+test('カレンダーから選んだ日に確定予定を追加し、同じ記録を変更・取消できる',async t=>{
+ const s=server(),w=page(t,b=>s.request(b));await w.refreshFieldGoals();
+ const day=w.FieldCalendarModel.shift(w.fieldGoalsToday(),1),month=day.slice(0,7);w.fieldMonthSelection=month;w.renderFieldProgress();
+ const selectDay=()=>w.document.querySelector('[data-fc-day="'+day+'"]').click();
+ selectDay();assert.equal(s.writes,0);assert.equal(w.document.querySelectorAll('[data-field-day-add]').length,5);
+ w.document.querySelector('[data-field-day-add="individual"]').click();
+ assert.equal(w.document.querySelector('[name=date]').value,day);assert.equal(w.document.querySelector('[name=dueDate]').value,day);assert.equal(w.document.querySelector('[name=status]').value,'confirmed');
+ w.document.querySelector('[name=person]').value='row:2';w.document.querySelector('[name=purpose]').value='Fixture meeting';
+ await w.document.querySelector('#field-goal-dialog form').onsubmit({preventDefault(){}});
+ assert.equal(s.state.records.length,1);assert.equal(w.FieldCalendarModel.daily(s.state,day,w.fieldGoalsToday()).individual.planned,1);
+ const id=s.state.records[0].id;selectDay();w.document.querySelector('[data-field-day-edit]').click();assert.equal(w.document.querySelector('[name=purpose]').value,'Fixture meeting');
+ w.document.querySelector('[name=status]').value='cancelled';await w.document.querySelector('#field-goal-dialog form').onsubmit({preventDefault(){}});
+ assert.equal(s.state.records.length,1);assert.equal(s.state.records[0].id,id);assert.equal(w.FieldCalendarModel.daily(s.state,day,w.fieldGoalsToday()).individual.planned,0);
+ selectDay();w.document.querySelector('[data-cancel]').click();assert.equal(w.FIELD_GOALS_EDITING,false);assert.equal(s.writes,2);
+ w.FIELD_GOALS_BUSY=true;w.renderFieldProgress();assert.equal(w.document.querySelector('[data-fc-day="'+day+'"]').disabled,true);
+});
 test('2端末同時編集は片方だけ保存し、競合入力を保持して取消後に再取得する',async t=>{
  const s=server(),a=page(t,b=>s.request(b)),b=page(t,x=>s.request(x));await a.refreshFieldGoals();await b.refreshFieldGoals();await a.saveFieldGoals(desired(4));await b.saveFieldGoals(desired(5));assert.equal(s.writes,1);assert.equal(s.state.goals['2026-10'].prospects,4);assert.equal(b.FIELD_GOALS_PENDING.state.goals['2026-10'].prospects,5);assert.match(b.FIELD_GOALS_PHASE,/競合/);await b.retryFieldGoals();assert.equal(s.writes,1);
  b.renderFieldProgress();b.document.getElementById('field-goals-discard').click();await new Promise(r=>setTimeout(r,5));assert.equal(b.FIELD_GOALS_PENDING,null);assert.equal(b.FIELD_GOALS_STATE.goals['2026-10'].prospects,4);

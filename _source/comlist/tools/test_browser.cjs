@@ -20,10 +20,13 @@ async function main(){
   for(const file of fs.readdirSync(path.join(root,'_assets')).filter(f=>/^(?:garden-icons-v1|menu-icons-v1|brief-icons-v2|brief-hero-morning-v2|victory-icons-v1|victory-banner-v1)\.(png|jpg)$/.test(f)))baseline=baseline.replaceAll('url("'+file+'")','url("data:image/'+(file.endsWith('.png')?'png':'jpeg')+';base64,'+fs.readFileSync(path.join(root,'_assets',file)).toString('base64')+'")');
   fs.writeFileSync(path.join(target,'baseline.html'),baseline);
   let offline=false,done={},serial=1,loseContactResponse=false,contactReceipts=new Map(),contactWrites=[];
+  let fieldState=require('../_assets/js/field-model').empty(),fieldVersion='v1';
   const server=http.createServer(async(req,res)=>{
     if(req.url==='/api'){
       let raw='';for await(const chunk of req)raw+=chunk;const body=JSON.parse(raw);let result;
-      if(body.action==='read')result=offline?{ok:false,error:'offline'}:body.what==='contacts'?{ok:true,records:contacts}:{ok:true,events};
+      if(body.action==='fieldGoalsRead')result={ok:true,state:fieldState,version:fieldVersion};
+      else if(body.action==='fieldGoalsWrite'){fieldState=require('../_assets/js/field-model').validate(body.state);fieldVersion='v'+(++serial);result={ok:true,state:fieldState,version:fieldVersion,requestId:body.requestId};}
+      else if(body.action==='read')result=offline?{ok:false,error:'offline'}:body.what==='contacts'?{ok:true,records:contacts}:{ok:true,events};
       else if(body.action==='taskState'){if(offline)result={ok:false};else{if(body.op==='set'){if(body.done)done[body.id]=true;else delete done[body.id];}result={ok:true,date:body.date,done};}}
       else if(body.action==='create'){const record={_row:contacts.length+2,_version:'fixture-v'+(++serial),...body.values};contacts.push(record);result={ok:true,record};}
       else if(body.action==='eventDelete'){events=events.filter(e=>e.id!==body.id);result={ok:true,deletedId:body.id};}
@@ -52,6 +55,17 @@ async function main(){
   try{
     await page.goto(base+'/baseline.html');await unlock();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'before.png'),fullPage:true});measurements.before=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
     await loaded();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'after.png'),fullPage:true});measurements.after=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
+    await page.locator('[data-view="field"]').click();await page.waitForFunction(()=>FIELD_GOALS_VERSION!==null);
+    const plannedDay=await page.evaluate(()=>FieldCalendarModel.shift(fieldGoalsToday(),1));
+    await page.locator('[data-fc-day="'+plannedDay+'"]').click();await page.locator('[data-field-day-add="individual"]').click();
+    assert.equal(await page.locator('[name=date]').inputValue(),plannedDay);
+    await page.locator('[name=person]').selectOption('row:2');await page.locator('[name=purpose]').fill('テストの面会予定');
+    await page.screenshot({path:path.join(target,'calendar-input.png'),fullPage:true});
+    await page.locator('#field-goal-dialog button[type=submit]').click();await page.waitForFunction(()=>FIELD_GOALS_PENDING===null&&FIELD_GOALS_STATE.records.length===1);
+    assert.equal(fieldState.records[0].status,'confirmed');const recordId=fieldState.records[0].id;
+    await page.locator('[data-fc-day="'+plannedDay+'"]').click();await page.locator('[data-field-day-edit]').click();await page.locator('[name=status]').selectOption('cancelled');await page.locator('#field-goal-dialog button[type=submit]').click();
+    await page.waitForFunction(()=>FIELD_GOALS_PENDING===null&&FIELD_GOALS_STATE.records[0].status==='cancelled');assert.equal(fieldState.records[0].id,recordId);
+    await page.locator('[data-view="today"]').click();
     assert.deepEqual(await page.locator('#today-dashboard > [data-section]').evaluateAll(es=>es.slice(0,2).map(e=>e.dataset.section)),['today','schedule']);
     await page.locator('[data-view="garden"]').click();await page.locator('.plant').first().click();await page.locator('#ge-open').click();await page.locator('#ge-ad').fill(date);await page.locator('#ge-nw').fill('保存後も残る予定');await page.locator('#ge-save').click();await page.waitForFunction(()=>!PANEL_EDIT);await page.waitForFunction(()=>!!localStorage.getItem('comlist-cache:v1:/comlist.html'));
     offline=true;await page.reload();await unlock();await page.locator('[data-view="garden"]').click();assert.match(await page.locator('#app').textContent(),/保存後も残る予定/);
