@@ -1,3 +1,4 @@
+
 function setView(v){
   VIEW = v;
   document.body.className = "view-" + v;
@@ -72,5 +73,4 @@ document.querySelectorAll("#catfilter input").forEach(function(c){
   c.addEventListener("change", render);
 });
 
-renderEvents();
-setView("today");
+/* 描画は復号後に行う */
