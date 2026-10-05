@@ -44,3 +44,9 @@ GAS本番への反映、実カレンダーでの結合確認、日次生成元�
 GAS既存デプロイv24とE列24:00規則の反映後、外部APIからAA166人／対象166人、カレンダー41件、取得完全性を確認。繰り返し予定のUID共有7件に対応し、開催日時を含む安定IDへ修正した。公開イベント名と同名のGoogle予定が混入検査に引っかかる問題は、検証済み公開イベント名との完全一致だけを区別して修正。非公開予定の検査は維持し、未来の説明も検査し、エラーログには実データの文字列を出さない。
 
 暗号化素材は通常ビルドで再生成し、AA全166人の値一致、今日の予定詳細2件、空き候補用41件と完全性を復号照合。既存のNotion／GmailタスクIDと現場数報告を保持。同日の端末キャッシュについて、編集済みプロフィールを保持して読み取り専用AAだけを新公開値で更新する回帰テストも追加した。平文素材は処理後削除。実予定の登録・連絡送信は行っていない。
+
+## Google Calendar draft links
+
+All weekly 90-minute availability cards now link to https://calendar.google.com/calendar/render using action=TEMPLATE, a generic title, UTC dates (YYYYMMDDTHHMMSSZ/YYYYMMDDTHHMMSSZ), and ctz=Asia/Tokyo. This is a same-tab normal anchor; no popup, API insertion, saved event, invite, contact details, or credentials are involved. Freshness and membership in the current availability result are checked on click. Midnight end times use the following day's instant. Browser Back may require unlocking again when the browser reloads the page; existing encrypted settings remain available.
+
+Google's official website-button guidance: https://support.google.com/calendar/answer/41207?hl=en . The current official API guide https://developers.google.com/workspace/calendar/api/guides/create-events documents API insertion, but does not document the full TEMPLATE query schema. Consequently, parameter support in the signed-in Google UI and native mobile app remains unverified; browser tests intercept navigation with a mock and never create real events. No additional OAuth scope or GAS deployment is needed.

@@ -33,3 +33,8 @@ test('24時終了の候補は翌日の0時として表示しない',t=>{
   const w=app(t,'2026-10-05T22:30:00+09:00');w.CALENDAR_SLOT_PREFS.weekday=[[1350,1440]];w.renderSlots();
   assert.match(w.document.querySelector('[data-slot-index="0"]').textContent,/22:30〜24:00/);
 });
+
+test('Google template carries only generic title and UTC 90-minute dates including midnight',t=>{
+ const w=app(t),start=Date.parse('2026-10-09T22:30:00+09:00'),end=Date.parse('2026-10-10T00:00:00+09:00');const u=new URL(w.googleCalendarSlotURL({start,end,name:'private',token:'private'},w.Date.now()));assert.equal(u.origin,'https://calendar.google.com');assert.equal(u.searchParams.get('dates'),'20261009T133000Z/20261009T150000Z');assert.equal(u.searchParams.get('text'),'\u4e88\u5b9a');assert.equal(u.searchParams.get('ctz'),'Asia/Tokyo');assert.deepEqual([...u.searchParams.keys()],['action','text','dates','ctz']);assert.ok(!u.href.includes('private'));assert.ok(u.href.includes('%E4%BA%88%E5%AE%9A'));for(const bad of [null,{start:NaN,end},{start:'2026-10-09',end},{start,end:start},{start,end:start+89*60000},{start:0,end:90*60000},{start:1e20,end:1e20+90*60000}])assert.equal(w.googleCalendarSlotURL(bad,w.Date.now()),null);
+});
+test('expired or stale click stays local and changes no editor or persisted data',t=>{const w=app(t);w.renderSlots();const s=w.CalendarAvailability.compute(w.CALENDAR_AVAILABILITY,w.CALENDAR_SLOT_PREFS,w.Date.now()).slots[0];assert.equal(w.openSlotDraft(s),true);w.CALENDAR_AVAILABILITY.info.complete=false;assert.equal(w.openSlotDraft(s),false);assert.equal(w.document.querySelectorAll('.slot-candidate').length,0);});
