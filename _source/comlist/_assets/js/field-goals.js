@@ -36,7 +36,6 @@ function wireFieldGoals(m){
   document.getElementById('field-goals-refresh').onclick=refreshFieldGoals;
   document.getElementById('field-goals-retry').onclick=function(){if(!getWriteToken()&&!askWriteToken())return;retryFieldGoals();};
   document.getElementById('field-goals-discard').onclick=async function(){if(FIELD_GOALS_BUSY||!window.confirm('未同期の変更を取り消します。通信先で保存済みの場合、その記録は削除しません。続けますか？'))return;FIELD_GOALS_PENDING=null;FIELD_GOALS_REVISION++;await persistSavedState();await refreshFieldGoals();renderFieldProgress();};
-  box.querySelectorAll('[data-field-record-today]').forEach(function(b){b.onclick=function(){openFieldRecordEditor(m,null,b.dataset.fieldRecordToday);var status=document.querySelector('#field-goal-dialog [name=status]');if(status)status.value='completed';};});
   if(typeof wireFieldMissions==='function')wireFieldMissions(m);
 }
 function fieldDialog(title,content,save){
@@ -86,7 +85,7 @@ async function retryFieldGoals(){
   try{
     if(!await persistSavedState())throw Error('cache');
     if(!pending.version){var initial=await fieldGoalsRequest('fieldGoalsRead');if(!initial.ok)throw Error('read');var current=FieldGoalsModel.validate(initial.state);FIELD_GOALS_STATE=current;FIELD_GOALS_VERSION=initial.version;if(JSON.stringify(current)!==JSON.stringify(FieldGoalsModel.empty())){FIELD_GOALS_PHASE='別端末の記録があります。未同期の変更を取消して最新内容を確認してください。';return;}pending.version=initial.version;await persistSavedState();}
-    pending.sent=true;if(!await persistSavedState())throw Error('cache');var j=await fieldGoalsRequest('fieldGoalsWrite',pending);if(j.error==='conflict'){FIELD_GOALS_PHASE='別端末の更新と競合しました。入力を保持しています。未同期の変更を取消して最新内容を確認してください。';return;}if(!j.ok&&j.message){FIELD_GOALS_PHASE=j.message+' 未同期の入力は保持しています。';return;}if(!j.ok)throw Error('sync');var data=FieldGoalsModel.validate(j.state);if(typeof j.version!=='string'||!j.version)throw Error('version');if(typeof fieldConfirmedProgress==='function')fieldConfirmedProgress(FIELD_GOALS_STATE,data);FIELD_GOALS_STATE=data;FIELD_GOALS_VERSION=j.version;FIELD_GOALS_PENDING=null;FIELD_GOALS_REVISION++;FIELD_GOALS_PHASE='同期済み';await persistSavedState();
+    pending.sent=true;if(!await persistSavedState())throw Error('cache');var j=await fieldGoalsRequest('fieldGoalsWrite',pending);if(j.error==='conflict'){FIELD_GOALS_PHASE='別端末の更新と競合しました。入力を保持しています。未同期の変更を取消して最新内容を確認してください。';return;}if(!j.ok&&j.message){FIELD_GOALS_PHASE=j.message+' 未同期の入力は保持しています。';return;}if(!j.ok)throw Error('sync');var data=FieldGoalsModel.validate(j.state);if(typeof j.version!=='string'||!j.version)throw Error('version');FIELD_GOALS_STATE=data;FIELD_GOALS_VERSION=j.version;FIELD_GOALS_PENDING=null;FIELD_GOALS_REVISION++;FIELD_GOALS_PHASE='同期済み';await persistSavedState();
   }catch(ignore){FIELD_GOALS_PHASE='同期失敗・再試行できます。未同期の変更は暗号化保存され、同じIDで再試行します。';}
   finally{FIELD_GOALS_BUSY=false;renderFieldProgress();}
 }

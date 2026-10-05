@@ -59,8 +59,8 @@ function renderFieldProgress() {
   var sourceUrl = /^https:\/\/app\.notion\.com\/[a-zA-Z0-9/?=&-]+$/.test(selected.url || "") ? selected.url : "";
   box.innerHTML = '<div class="field-head"><div><h2>現場数</h2><p>Notionの日別報告から、活動月ごとの最新の累計を表示しています。日ごとの数字は合算していません。</p></div>'
     + '<label>表示する月 <select id="field-month">' + options + '</select></label></div>'
-    + (typeof fieldGoalsHTML==='function'?fieldGoalsHTML(selected.month):'')
     + (typeof fieldCalendarHTML==='function'?fieldCalendarHTML(selected.month):'')
+    + (typeof fieldGoalsHTML==='function'?fieldGoalsHTML(selected.month):'')
     + '<section class="field-section"><h3>' + title + '</h3>'
     + '<p class="field-asof">活動日 ' + fieldDateLabel(selected.activityDate) + '時点（報告日 ' + fieldDateLabel(selected.reportDate) + '）'
     + (selected.partial ? '・月途中の記録' : '') + '</p>'
