@@ -33,7 +33,8 @@ test("現場数タブは今月と過去月の5項目、出典、月別グラフ�
   w.FIELD_PROGRESS = validateFieldProgress({ months: [latest, previous] });
   w.setView("field");
   assert.equal(w.document.body.className, "view-field");
-  assert.equal(w.document.querySelectorAll(".field-card").length, 5);
+  assert.equal(w.document.querySelectorAll(".field-goal-metrics").length, 0);
+  assert.equal(w.document.querySelectorAll(".field-mission-gauges article").length, 5);
   assert.match(w.document.getElementById("fieldwrap").textContent, /活動日 10月1日時点/);
   assert.equal(w.document.querySelectorAll(".field-chart-row").length, 2);
   assert.deepEqual(Array.from(w.document.querySelectorAll(".field-chart-month"), e => e.textContent), ["2026/10※", "2026/09"]);
