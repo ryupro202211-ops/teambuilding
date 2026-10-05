@@ -35,7 +35,7 @@ test('月達成のお祝いは確認済みだけに1度、再読込・再同期�
  b.FIELD_GOALS_STATE.records[0].status='cancelled';b.FIELD_GOALS_STATE.records[0].outcomeConfirmed=false;b.renderFieldProgress();assert.equal(b.document.getElementById('field-month-celebration'),null);b.FIELD_GOALS_STATE.records[0].status='completed';b.FIELD_GOALS_STATE.records[0].outcomeConfirmed=true;b.renderFieldProgress();assert.equal(b.document.getElementById('field-mission-announcement').textContent,'');
 });
 test('動きを減らす設定は暗号化で保持され、未同期の達成には演出を付けない',async t=>{
- const s=server(),w=page(t,b=>s.request(b),true),date=w.fieldGoalsToday();await w.initializeSavedState('fixture-pass',date);w.FIELD_MISSION_REDUCE_MOTION=true;await w.persistSavedState();w.renderFieldProgress();assert.equal(w.document.getElementById('field-reduce-motion').checked,true);assert.ok(w.document.getElementById('field-mission-board').classList.contains('reduced-motion'));
+ const s=server(),w=page(t,b=>s.request(b),true),date=w.fieldGoalsToday();await w.initializeSavedState('fixture-pass',date);w.FIELD_MISSION_REDUCE_MOTION=true;await w.persistSavedState();w.renderFieldProgress();assert.equal(w.document.getElementById('field-reduce-motion'),null);assert.ok(w.document.getElementById('field-mission-board').classList.contains('reduced-motion'));
  const v=page(t,x=>s.request(x),true);v.localStorage.setItem(v.cacheKey(),w.localStorage.getItem(w.cacheKey()));await v.initializeSavedState('fixture-pass',date);assert.equal(v.FIELD_MISSION_REDUCE_MOTION,true);
  w.FIELD_GOALS_PENDING={state:desired(3),version:'v1',requestId:'request-fixture-0001'};await w.maybeCelebrateFieldMission(date.slice(0,7));assert.deepEqual(Object.keys(w.FIELD_MISSION_CELEBRATED),[]);
 });
