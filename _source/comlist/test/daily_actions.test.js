@@ -15,14 +15,14 @@ test('analytics KPI and unplanned list use the same people and label the action 
   assert.match(w.document.querySelector('[data-analysis-list="late"]').textContent,/アクション日.*2026-10-01/);
   assert.doesNotMatch(w.document.querySelector('[data-analysis-list="late"]').textContent,/2026-12-01/);
 });
-test('home keeps deadlines, important three and schedule without the removed contact card',t=>{
+test('home keeps deadlines and schedule without the removed contact card',t=>{
   const w=app(t,[person(2)]);w.DAILY_TASKS={date:'2026-10-02',tasks:[{id:'due',type:'notion',section:'today',title:'期限'},{id:'old',type:'gmail',section:'selfOverdue',title:'超過',overdueDays:3},{id:'high',type:'notion',section:'todo',title:'高',priority:'high'}]};w.renderTodayTasks();
-  assert.deepEqual(Array.from(w.document.querySelectorAll('#today-dashboard [data-section]')).slice(0,3).map(x=>x.dataset.section),['today','important','schedule']);
+  assert.deepEqual(Array.from(w.document.querySelectorAll('#today-dashboard [data-section]')).slice(0,2).map(x=>x.dataset.section),['today','schedule']);
   assert.equal(w.document.querySelector('#today-dashboard [data-section=contacts]'),null);
   assert.equal(w.eval('DATA.length'),1);
   assert.equal(w.contactSuggestions('2026-10-02').length,1);
   assert.equal(w.document.querySelectorAll('.today-task-check').length,3);
-  assert.equal(w.document.querySelectorAll('[data-important-task]').length,3);
+  assert.equal(w.document.querySelectorAll('[data-important-task]').length,0);
   assert.ok(w.document.querySelector('[data-section="selfOverdue"]'));
 });
 test('task sync distinguishes local, saving, failed and acknowledged and retries retained pending writes',async t=>{
