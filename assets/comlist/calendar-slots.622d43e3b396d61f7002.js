@@ -1,3 +1,4 @@
+
 var CALENDAR_AVAILABILITY=null,CALENDAR_SLOT_PREFS=null,calendarSlotWeek=0,calendarSlotsBusy=false,calendarSlotsError='';
 function slotStamp(value){var ms=Date.parse(value);return Number.isFinite(ms)?new Date(ms+9*3600000).toISOString().slice(0,16).replace('T',' ')+'（日本時間）':'未確認';}
 function slotTime(ms){return new Date(ms+9*3600000).toISOString().slice(11,16);}

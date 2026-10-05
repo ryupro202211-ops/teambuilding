@@ -38,3 +38,21 @@ test('Google template carries only generic title and UTC 90-minute dates includi
  const w=app(t),start=Date.parse('2026-10-09T22:30:00+09:00'),end=Date.parse('2026-10-10T00:00:00+09:00');const u=new URL(w.googleCalendarSlotURL({start,end,name:'private',token:'private'},w.Date.now()));assert.equal(u.origin,'https://calendar.google.com');assert.equal(u.searchParams.get('dates'),'20261009T133000Z/20261009T150000Z');assert.equal(u.searchParams.get('text'),'\u4e88\u5b9a');assert.equal(u.searchParams.get('ctz'),'Asia/Tokyo');assert.deepEqual([...u.searchParams.keys()],['action','text','dates','ctz']);assert.ok(!u.href.includes('private'));assert.ok(u.href.includes('%E4%BA%88%E5%AE%9A'));for(const bad of [null,{start:NaN,end},{start:'2026-10-09',end},{start,end:start},{start,end:start+89*60000},{start:0,end:90*60000},{start:1e20,end:1e20+90*60000}])assert.equal(w.googleCalendarSlotURL(bad,w.Date.now()),null);
 });
 test('expired or stale click stays local and changes no editor or persisted data',t=>{const w=app(t);w.renderSlots();const s=w.CalendarAvailability.compute(w.CALENDAR_AVAILABILITY,w.CALENDAR_SLOT_PREFS,w.Date.now()).slots[0];assert.equal(w.openSlotDraft(s),true);w.CALENDAR_AVAILABILITY.info.complete=false;assert.equal(w.openSlotDraft(s),false);assert.equal(w.document.querySelectorAll('.slot-candidate').length,0);});
+
+test('Upcoming events appear at their actual time alongside candidates, with overlapping events in separate lanes',t=>{
+ const w=app(t);w.EVENTS=[
+  {id:'a',date:'2026-10-06',startTime:'18:00',endTime:'20:00',title:'交流会 <script>'},
+  {id:'b',date:'2026-10-06',startTime:'19:00',endTime:'21:00',title:'講演会'},
+  {id:'ended',status:'終了',date:'2026-10-06',startTime:'18:00',endTime:'20:00',title:'終了済み'},
+  {id:'past',date:'2026-10-04',startTime:'18:00',endTime:'20:00',title:'過去'}
+ ];w.renderSlots();const overlays=w.document.querySelectorAll('.slot-event-overlay');assert.equal(overlays.length,2);
+ assert.equal(overlays[0].style.top,'440px');assert.equal(overlays[0].style.height,'88px');assert.notEqual(overlays[0].style.left,overlays[1].style.left);
+ assert.match(overlays[0].textContent,/18:00〜20:00.*交流会 <script>/);assert.equal(overlays[0].querySelector('script'),null);
+ assert.ok(w.document.querySelector('[data-slot-date="2026-10-06"] [data-slot-index]'));
+ w.EVENTS[0].status='終了';w.renderSlots();assert.equal(w.document.querySelectorAll('.slot-event-overlay').length,1);
+});
+test('Events before 8am expand the axis; unknown times stay in the date header; subsequent weeks use the same source',t=>{
+ const w=app(t);w.EVENTS=[{date:'2026-10-06',startTime:'07:30',endTime:'08:30',title:'朝会'},{date:'2026-10-06',title:'時刻未定'}, {date:'2026-10-13',startTime:'12:00',endTime:'13:00',title:'翌週'}];w.renderSlots();
+ assert.equal(w.document.querySelector('.slot-event-overlay').style.top,'22px');assert.match(w.document.querySelector('[data-slot-date="2026-10-06"] .slot-event-untimed').textContent,/時刻未定/);
+ w.document.querySelector('#slot-week-next').click();assert.match(w.document.querySelector('.slot-event-overlay').textContent,/翌週/);
+});
