@@ -59,3 +59,5 @@ test('carries only display fields and normalizes a broken overdue count', () => 
   assert.deepEqual(Object.keys(item).sort(), ['detail', 'id', 'overdueDays', 'section', 'title']);
   assert.equal(item.overdueDays, 0);
 });
+
+test('removing an excluded canonical owner is not credited as a completed task',()=>{const {resolveDefeated}=require('../resolved_tasks');const task={id:'chef',type:'gmail',title:'fixture',section:'memberOverdue',owner:'\u30b7\u30a7\u30d5\u5bcc\u5fb3',overdueDays:1};assert.deepEqual(resolveDefeated({date:'2026-10-04',tasks:[task]},{date:'2026-10-05',tasks:[]}),[]);assert.equal(resolveDefeated({date:'2026-10-04',tasks:[{...task,owner:task.owner+'2'}]},{date:'2026-10-05',tasks:[]}).length,1);});

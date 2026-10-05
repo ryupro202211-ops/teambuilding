@@ -1,5 +1,8 @@
 'use strict';
 
+// Existing canonical owner key; only Gmail member-overdue monitoring is excluded.
+const EXCLUDED_GMAIL_OVERDUE_OWNERS = new Set(['シェフ富徳']);
+function excludedMemberOverdue(task){return task?.type==='gmail' && task.section==='memberOverdue' && EXCLUDED_GMAIL_OVERDUE_OWNERS.has(task.owner);}
 const TASK_TYPES = new Set(['notion', 'gmail', 'calendar']);
 const TASK_SECTIONS = new Set(['selfOverdue', 'memberOverdue', 'todo', 'today', 'upcoming', 'other']);
 const PRIORITIES = new Set(['high', 'medium', 'low']);
@@ -102,7 +105,9 @@ function validateDailyTasks(input, today, { reuseData = false, requireSection = 
     };
   });
 
-  return { ...input, tasks, sources: normalizeSources(input.sources, reuseData) };
+  const included=tasks.filter(task=>!excludedMemberOverdue(task));
+  const hp=tasks.length===included.length?input.hp:{selfOverdue:included.filter(t=>t.section==='selfOverdue').length,memberOverdue:included.filter(t=>t.section==='memberOverdue').length};
+  return { ...input, tasks:included, ...(hp===undefined?{}:{hp}), ...(tasks.length===included.length?{}:{hpNote:`\u672c\u4eba\u306e\u671f\u9650\u5207\u308c ${hp.selfOverdue}\u4ef6 \u00d7-10 / \u30e1\u30f3\u30d0\u30fc\u5207\u308c ${hp.memberOverdue}\u4ef6 \u00d7-5 / \u6bce\u65e5100\u306b\u30ea\u30bb\u30c3\u30c8`}), sources: normalizeSources(input.sources, reuseData) };
 }
 
-module.exports = { validateDailyTasks };
+module.exports = { validateDailyTasks, excludedMemberOverdue, EXCLUDED_GMAIL_OVERDUE_OWNERS };

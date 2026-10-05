@@ -75,3 +75,5 @@ test('a receipt replay restores the full current record so its new version canno
   w.fetch=async()=>({json:async()=>({ok:true,row:2,version:'current',updated:{},contactState:record._contactState,record})});await w.retryContactAction();
   assert.equal(w.eval('DATA[0]["次会う日"]'),'2027/01/01');assert.equal(w.eval('DATA[0]["仕事(O)"]'),'Other device');assert.equal(w.eval('DATA[0]._version'),'current');
 });
+
+test('legacy synced excluded member cannot reappear or lower team HP; original data stays intact',t=>{const w=app(t),chef='シェフ富徳',tasks=[{id:'chef',type:'gmail',title:'excluded fixture',owner:chef,section:'memberOverdue',overdueDays:2},{id:'other',type:'gmail',title:'retained fixture',owner:chef+'2',section:'memberOverdue',overdueDays:2}];w.DAILY_TASKS={date:'2026-10-02',tasks,hp:{selfOverdue:0,memberOverdue:2}};w.renderTodayTasks();assert.equal(w.document.querySelectorAll('[data-task-id="chef"]').length,0);assert.ok(w.document.querySelector('[data-task-id="other"]'));assert.match(w.document.querySelector('.today-teamhp-value').textContent,/95 \/ 100/);w.renderTodayTasks();assert.equal(w.todayData().tasks.length,1);assert.equal(w.DAILY_TASKS.tasks.length,2);});

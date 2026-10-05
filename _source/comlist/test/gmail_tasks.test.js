@@ -318,3 +318,5 @@ test('監視対象外の過去継続は非group宛の完了でもタスクにし
 
   assert.deepEqual(threadToTasks(gmailThread, '2026-09-20'), []);
 });
+
+test('excluded overdue canonical owner does not affect today, future or similar names',()=>{const {parseContinuationLine}=require('../gmail_tasks'),chef='シェフ富徳',prefix='\u3010\u7d99\u7d9a\u3011 ';assert.equal(parseContinuationLine(prefix+'10/4 19:00 '+chef,'2026-10-05'),null);assert.equal(parseContinuationLine(prefix+'10/5 19:00 '+chef,'2026-10-05').section,'today');assert.equal(parseContinuationLine(prefix+'10/6 19:00 '+chef,'2026-10-05').section,'upcoming');assert.equal(parseContinuationLine(prefix+'10/4 19:00 '+chef+'2','2026-10-05').owner,chef+'2');});

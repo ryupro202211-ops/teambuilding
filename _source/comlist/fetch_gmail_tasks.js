@@ -117,7 +117,7 @@ function mergeGmailTasks(input, gmailResult, today) {
   const existingTasks = input.tasks;
   const tasks = [
     ...existingTasks.filter(task => task?.type !== 'gmail'),
-    ...gmailResult.tasks,
+    ...gmailResult.tasks.filter(task=>!require('./daily_tasks').excludedMemberOverdue(task)),
   ];
   const hp = aggregateHp(tasks);
   const merged = {

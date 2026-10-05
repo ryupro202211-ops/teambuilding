@@ -174,10 +174,15 @@ function parseContinuationLine(line, today) {
   const dueDisplay = `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`
     + (hour === null ? '' : ` ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
   const ownerText = match[5];
+
   const self = ownerText.includes('りゅうちゃん');
   const monitored = ownerText.match(new RegExp(MONITORED_MEMBERS.join('|'), 'g')) || [];
+  const excludedKeys=require('./daily_tasks').EXCLUDED_GMAIL_OVERDUE_OWNERS;
+  const ownerTokens=ownerText.trim().split(/[\s・、,/]+/u);
+  if(dayDifference>0 && !self && monitored.length>0 && monitored.every(name=>excludedKeys.has(name)) && monitored.every(name=>ownerTokens.includes(name)))return null;
   if (dayDifference > 0 && !self && monitored.length === 0) return null;
-  const owner = self ? 'りゅうちゃん' : monitored.length > 0 ? monitored.join('・') : ownerText.trim();
+  const exactExcludedAlias = monitored.length===1 && require('./daily_tasks').EXCLUDED_GMAIL_OVERDUE_OWNERS.has(monitored[0]) && ownerText.trim()!==monitored[0];
+  const owner = exactExcludedAlias ? ownerText.trim() : self ? 'りゅうちゃん' : monitored.length > 0 ? monitored.join('・') : ownerText.trim();
 
   let section = 'upcoming';
   if (dayDifference > 0) {

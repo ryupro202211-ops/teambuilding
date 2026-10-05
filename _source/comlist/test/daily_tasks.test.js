@@ -184,3 +184,5 @@ test('keeps a supplied owner and rejects an unusable one', () => {
     assert.throws(() => validateDailyTasks({ ...base, tasks: [{ id: 'a', type: 'gmail', title: 't', owner }] }, '2026-09-16'), /owner/);
   }
 });
+
+test('excluded canonical Gmail overdue owner is removed while other owners and features remain',()=>{const chef='シェフ富徳',task={id:'chef',type:'gmail',title:'fixture',owner:chef,section:'memberOverdue',overdueDays:1};const tasks=[task,{...task,id:'other',owner:chef+'2'},{...task,id:'shared',owner:chef+'・Other'},{...task,id:'notion',type:'notion'},{...task,id:'today',section:'today',overdueDays:0}];const result=validateDailyTasks({date:'2026-10-05',tasks,hp:{selfOverdue:0,memberOverdue:4},sources:verifiedSources()},'2026-10-05',{requireSection:true});assert.deepEqual(result.tasks.map(t=>t.id),['other','shared','notion','today']);assert.equal(result.hp.memberOverdue,3);assert.equal(tasks.length,5);});

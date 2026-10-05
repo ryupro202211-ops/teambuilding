@@ -62,3 +62,7 @@ npm run test:browser
 4. 内容・GAS設定・テストをレビューし、公開の承認を得てからブランチのpush／PR／マージを行う。GitHub Pagesの公開後に新しいハッシュのJS/CSS、端末状態、最新データの再取得を確認する。実データで記録操作を勝手に実行しない。
 
 既存のデプロイスクリプトには専用取得先のreset/cleanとpushが含まれる。今回のレビュー用チェックアウトでは実行しない。
+
+## Gmail member-overdue exclusion
+
+The existing canonical monitored-owner configuration identifies the excluded member; there is no person ID in this Gmail feed. Only Gmail memberOverdue tasks for this exact key are removed during acquisition/validation and filtered from legacy browser payloads. Similar names, shared owners, Notion tasks, today/future mail actions, contacts and source messages remain available. HP counts and explanatory counts use the same filtered task set. Removal from monitoring is not counted as a defeated/completed task. Original encrypted task data and completion queues are retained. Apply gmail_tasks.js, daily_tasks.js, fetch_gmail_tasks.js, resolved_tasks.js and the updated runtime sources to the daily generator only when publication is authorized. No GAS setting or additional scope is needed.

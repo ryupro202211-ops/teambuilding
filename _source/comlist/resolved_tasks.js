@@ -32,7 +32,7 @@ function resolveDefeated(previous, current) {
   }
 
   return previous.tasks
-    .filter((task) => task && OVERDUE_SECTIONS.has(task.section))
+    .filter((task) => task && OVERDUE_SECTIONS.has(task.section) && !require('./daily_tasks').excludedMemberOverdue(task))
     .filter((task) => [...taskKeys(task)].every(key => !stillOverdue.has(key)))
     .map((task) => ({
       id: String(task.id),
