@@ -1,14 +1,20 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
-function build(t,leak=false){
- const temp=fs.mkdtempSync(path.join(os.tmpdir(),'public-calendar-overlap-'));t.after(()=>fs.rmSync(temp,{recursive:true,force:true}));const root=path.resolve(__dirname,'..'),title='PUBLIC_CURATED_EVENT_TITLE',secret='PRIVATE_GOOGLE_EVENT_DESCRIPTION',date='2026-10-04';
+function build(t,{leak=false,calendarTitle='PUBLIC_CURATED_EVENT_TITLE',description='PRIVATE_GOOGLE_EVENT_DESCRIPTION'}={}){
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'public-calendar-overlap-'));t.after(()=>fs.rmSync(temp,{recursive:true,force:true}));const root=path.resolve(__dirname,'..'),title='PUBLIC_CURATED_EVENT_TITLE',secret=description,date='2026-10-04';
  const master=path.join(temp,'list.html'),original=require('../app_sources').readApp(path.join(root,'_assets/list.html'));fs.writeFileSync(master,leak?original.replace('</header>','<span>'+secret+'</span></header>'):original);for(const image of ['garden-icons-v1.png','menu-icons-v1.png','brief-icons-v2.png','brief-hero-morning-v2.jpg','victory-icons-v1.png','victory-banner-v1.jpg','dream-vision-board.png','my-best-life-icon-v1.png'])fs.copyFileSync(path.join(root,'_assets',image),path.join(temp,image));
- const values={contacts:[{_row:2,'カテゴリー':'A','名前(あだ名)':'Fixture only'}],events:[{id:'evt_public_overlap_fixture01',status:'公開',date:'2026-10-05',startTime:'09:00',endTime:'10:00',title,version:1,updatedAt:date+'T08:00:00+09:00'}],calendar:[['2026-10-05T09:00','2026-10-05T10:00',{source:'primary',eventId:'google-private-fixture',allDay:false,detailsAvailable:true,title,location:'',description:secret}]],tasks:{date,tasks:[],sources:{calendar:{ok:true},notion:{ok:true},gmail:{ok:true,checkedThreads:0,uniqueThreads:0}}}};
+ const values={contacts:[{_row:2,'カテゴリー':'A','名前(あだ名)':'Fixture only'}],events:[{id:'evt_public_overlap_fixture01',status:'公開',date:'2026-10-05',startTime:'09:00',endTime:'10:00',title,version:1,updatedAt:date+'T08:00:00+09:00'}],calendar:[['2026-10-05T09:00','2026-10-05T10:00',{source:'primary',eventId:'google-private-fixture',allDay:false,detailsAvailable:true,title:calendarTitle,location:'',description:secret}]],tasks:{date,tasks:[],sources:{calendar:{ok:true},notion:{ok:true},gmail:{ok:true,checkedThreads:0,uniqueThreads:0}}}};
  const args=[path.join(root,'build.js'),'--today',date,'--now','08:00','--master',master,'--pass','fixture-overlap-pass','--out',path.join(temp,'comlist.html')],files={};for(const [key,value]of Object.entries(values)){const file=path.join(temp,key+'.json'),bytes=Buffer.from(JSON.stringify(value));fs.writeFileSync(file,bytes);args.push('--'+key,file);if(key!=='tasks')files[key]={path:path.basename(file),bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};}fs.writeFileSync(path.join(temp,'snapshot_success.json'),JSON.stringify({version:1,result:'OK',source:'snapshot',generatedAt:new Date().toISOString(),files}));const result=spawnSync(process.execPath,args,{cwd:root,encoding:'utf8'});return {result,temp,title,secret};
 }
 test('calendar title matching a curated public event passes while private description stays encrypted',t=>{
  const {result,temp,title,secret}=build(t);assert.equal(result.status,0,result.stderr);const manifest=require('../artifact_bundle').verifyBundle(path.join(temp,'comlist.html'));const expanded=require('../app_sources').readApp(path.join(temp,'comlist.html'));assert.ok(expanded.includes(title));for(const ref of [path.join(temp,'comlist.html'),...manifest.files.map(f=>path.join(temp,f.path))])assert.equal(fs.readFileSync(ref).includes(secret),false);assert.equal((result.stdout+result.stderr).includes(secret),false);
 });
+test('calendar title contained in a curated public event title is not mistaken for a new leak',t=>{
+ const {result}=build(t,{calendarTitle:'CURATED_EVENT_TITLE',description:''});assert.equal(result.status,0,result.stderr);
+});
+test('a private calendar description remains rejected even when it overlaps a curated public title',t=>{
+ const {result,secret}=build(t,{calendarTitle:'PUBLIC_CURATED_EVENT_TITLE',description:'CURATED_EVENT_TITLE'});assert.notEqual(result.status,0);assert.match(result.stderr,/カレンダー詳細/);assert.equal((result.stdout+result.stderr).includes(secret),false);
+});
 test('future private calendar description leaking outside the encrypted data is still rejected without logging contents',t=>{
- const {result,secret}=build(t,true);assert.notEqual(result.status,0);assert.match(result.stderr,/カレンダー詳細/);assert.equal((result.stdout+result.stderr).includes(secret),false);
+ const {result,secret}=build(t,{leak:true});assert.notEqual(result.status,0);assert.match(result.stderr,/カレンダー詳細/);assert.equal((result.stdout+result.stderr).includes(secret),false);
 });

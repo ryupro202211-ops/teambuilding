@@ -53,6 +53,12 @@ function materialManifestPath(files) {
   return path.join(path.dirname(files.contacts), `material_manifest${suffix}.json`);
 }
 
+function stripCiphertextForPlaintextScan(html) {
+  const marker = /const ENC = \{[\s\S]*?\};/;
+  if (!marker.test(html)) throw new Error("暗号化ペイロードを平文検査から分離できない");
+  return html.replace(marker, "const ENC = {};");
+}
+
 function resolveManifestFile(baseDir, relativePath) {
   if (typeof relativePath !== "string" || !relativePath) throw new Error("素材manifestのパスがありません");
   const resolvedBase = path.resolve(baseDir);
@@ -600,29 +606,32 @@ async function fullBuild() {
   // 復号ラウンドトリップ（暗号文が本当に levelup で戻るか）
   const round = await decryptCheck(ENC, pass);
   if (JSON.stringify(round) !== JSON.stringify(payload)) errs.push("復号ラウンドトリップ不一致");
+  // 暗号文・salt・IVのランダムな並びが平文候補と偶然一致する誤検知を避け、ENC外を検査する。
+  const plaintextScanHtml = stripCiphertextForPlaintextScan(html);
   // 平文リーク：連絡先の名前が平文で出ていないこと
   // ※1〜2文字の名前（やす/ごう等）はUIの通常テキストと偶発一致するため対象外。
   //   暗号化が壊れれば3文字以上の名前が多数漏れるので検出力は落ちない。
   const leaked = contacts
     .map((c) => c["名前(あだ名)"])
-    .filter((n) => n && n !== "(名前なし)" && n.length >= 3 && html.indexOf(n) !== -1);
+    .filter((n) => n && n !== "(名前なし)" && n.length >= 3 && plaintextScanHtml.indexOf(n) !== -1);
   if (leaked.length) errs.push("平文の名前が混入: " + leaked.length + '件');
-  // Curated application events are intentionally public; matching titles do not expose a private association.
-  const publicEventTitles = new Set(appEvents.map(event => event.title));
+  // A calendar title that is already visible inside a curated public event title adds no plaintext to the page.
+  const isCuratedPublicTitle = value => typeof value === 'string' && value.length >= 3 &&
+    appEvents.some(event => typeof event.title === 'string' && event.title.includes(value));
   const leakedTaskTitles = dailyTasks.tasks.concat(dailyTasks.resolved || [])
-    .filter(task => task.title && task.title.length >= 3 && html.includes(task.title) &&
-      !(task.type === 'calendar' && publicEventTitles.has(task.title)))
+    .filter(task => task.title && task.title.length >= 3 && plaintextScanHtml.includes(task.title) &&
+      !(task.type === 'calendar' && isCuratedPublicTitle(task.title)))
     .map(task => task.title);
   if (leakedTaskTitles.length) errs.push('平文のタスク名が混入: ' + leakedTaskTitles.length + '件');
   const calendarDetails = (dailyTasks.calendar || []).concat(!retained ? (calendar || []).map(row => row[2] || {}) : []);
   const calendarSecrets = calendarDetails.flatMap(event => [
-    {value:event.title, alreadyPublic:publicEventTitles.has(event.title)},
+    {value:event.title, alreadyPublic:isCuratedPublicTitle(event.title)},
     {value:event.location, alreadyPublic:false}, {value:event.description, alreadyPublic:false}
   ]);
-  if (calendarSecrets.some(item => !item.alreadyPublic && typeof item.value === 'string' && item.value.length >= 3 && !['予定名未取得','無題の予定'].includes(item.value) && html.includes(item.value))) errs.push('平文のカレンダー詳細が混入');
+  if (calendarSecrets.some(item => !item.alreadyPublic && typeof item.value === 'string' && item.value.length >= 3 && !['予定名未取得','無題の予定'].includes(item.value) && plaintextScanHtml.includes(item.value))) errs.push('平文のカレンダー詳細が混入');
   const leakedTaskUrls = dailyTasks.tasks
     .map((task) => task.url)
-    .filter((url) => url && html.indexOf(url) !== -1);
+    .filter((url) => url && plaintextScanHtml.indexOf(url) !== -1);
   if (leakedTaskUrls.length) errs.push("平文のタスクURLが混入: " + leakedTaskUrls.length + '件');
   // 書き込みトークンらしき文字列が無いこと（API_URL は可）
   if (/API_TOKEN\s*[:=]/.test(html)) errs.push("API_TOKEN らしき文字列が混入");
@@ -655,4 +664,4 @@ if (require.main === module) {
   main().catch((e) => { console.error("ERROR:", e.message); process.exit(1); });
 }
 
-module.exports = { materialManifestPath, readMaterialFiles, replaceArray, resolveMaterialSelection, verifySnapshotProof, writeAtomic, validateBuildEvents, gateHtmlForTest: gateHtml, encryptForTest: async (p, pass) => (await encryptPayload(p, pass)).ENC };
+module.exports = { stripCiphertextForPlaintextScan, materialManifestPath, readMaterialFiles, replaceArray, resolveMaterialSelection, verifySnapshotProof, writeAtomic, validateBuildEvents, gateHtmlForTest: gateHtml, encryptForTest: async (p, pass) => (await encryptPayload(p, pass)).ENC };
