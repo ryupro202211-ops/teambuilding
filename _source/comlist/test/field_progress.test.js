@@ -14,6 +14,14 @@ const previous = {
   ...latest, month: "2026-09", activityDate: "2026-09-30", reportDate: "2026-10-01", partial: false,
   values: { ...latest.values, individual: 9, new_friends: 12 }
 };
+test('日別進捗は空欄とゼロを区別し、同じ活動日は最新報告を選ぶ',()=>{
+ const first={activityDate:latest.activityDate,reportDate:latest.reportDate,url:latest.url,values:{...latest.values,orientation:null,individual:1}};
+ const second={...first,reportDate:'2026-10-03',values:{...first.values,individual:2}};
+ const out=validateFieldProgress({months:[latest],days:[second,first]});
+ assert.equal(out.days.length,1);assert.equal(out.days[0].values.individual,2);assert.equal(out.days[0].values.orientation,null);assert.equal(out.days[0].values.introductions,0);
+ assert.throws(()=>validateFieldProgress({months:[latest],days:[{...first,activityDate:'2026-02-30'}]}),/日付/);
+ assert.throws(()=>validateFieldProgress({months:[latest],days:[{...first,values:{...first.values,individual:-1}}]}),/数値/);
+});
 
 test("月別現場数は活動月に属する記録を保持し、重複と不正値を止める", () => {
   const data = validateFieldProgress({ months: [latest, previous] });
@@ -59,4 +67,13 @@ test("現場数が未搭載の旧データでも画面を開ける", t => {
   t.after(() => dom.window.close());
   dom.window.setView("field");
   assert.match(dom.window.document.getElementById("fieldwrap").textContent, /未報告/);
+});
+test('日別画面はNotionの進捗を実績として表示する',t=>{
+ const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
+ const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());const w=dom.window;
+ const day=w.fieldGoalsToday(),month=day.slice(0,7);
+ w.FIELD_PROGRESS={months:[{...latest,month,activityDate:day,reportDate:day}],days:[{activityDate:day,reportDate:day,url:latest.url,values:{...latest.values,individual:7,orientation:null}}]};
+ w.fieldMonthSelection=month;w.setView('field');
+ const card=w.document.querySelector('[data-fc-day="'+day+'"]').closest('article');
+ assert.match(card.textContent,/個別実 7 \/ 予/);assert.match(card.textContent,/オリエン実 — \/ 予/);
 });

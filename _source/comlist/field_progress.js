@@ -32,7 +32,23 @@ function validateFieldProgress(input) {
     };
   });
   months.sort((a, b) => a.month.localeCompare(b.month));
-  return { months };
+  const dayMap = new Map();
+  if (input.days !== undefined && !Array.isArray(input.days)) throw new Error("現場数の日別データが不正です");
+  for (const record of input.days || []) {
+    const validDate = s => typeof s === 'string' && /^20\d{2}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s)) && new Date(s+'T00:00:00Z').toISOString().slice(0,10) === s;
+    if (!validDate(record?.activityDate) || !validDate(record.reportDate) || !/^https:\/\/app\.notion\.com\/[a-zA-Z0-9/?=&-]+$/.test(record.url || '')) throw new Error('現場数の日別の日付または出典が不正です');
+    const values = {};
+    for (const key of METRICS) {
+      const value = record.values?.[key];
+      if (value !== null && (!Number.isInteger(value) || value < 0)) throw new Error('現場数の日別の数値が不正です: '+key);
+      values[key] = value;
+    }
+    const previous = dayMap.get(record.activityDate);
+    if (!previous || previous.reportDate < record.reportDate) dayMap.set(record.activityDate, {activityDate:record.activityDate, reportDate:record.reportDate, url:record.url, values});
+  }
+  const result = { months };
+  if (input.days !== undefined) result.days = [...dayMap.values()].sort((a,b)=>a.activityDate.localeCompare(b.activityDate));
+  return result;
 }
 
 module.exports = { METRICS, validateFieldProgress };

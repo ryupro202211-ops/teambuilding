@@ -4,6 +4,13 @@ const people=Array.from({length:4},(_,i)=>({id:'person-calendar-000'+i,name:'Per
 const row=(id,patch={})=>({id:'record-calendar-000'+id,personId:people[0].id,kind:'individual',status:'confirmed',date:'2026-10-05',dueDate:'2026-10-05',purpose:'Fixture',outcomeConfirmed:false,newPersonForMonth:true,...patch});
 const data=records=>({goals:{'2026-10':{prospects:3,metrics:{orientation:null,introductions:null,individual:10,first_individual:null,new_friends:0}}},persons:people,records});
 const report={activityDate:'2026-10-03',values:{orientation:0,introductions:0,individual:4,first_individual:0,new_friends:0},goals:{}};
+test('Notion activity-day progress replaces local actual without adding it twice; plans remain editable',()=>{
+ const d=data([row(0,{date:'2026-10-04',status:'completed'}),row(1,{date:'2026-10-04',status:'confirmed'})]);
+ const progress={days:[{activityDate:'2026-10-04',reportDate:'2026-10-05',values:{individual:3,orientation:null,introductions:0,first_individual:null,new_friends:null}}]};
+ const counts=C.daily(d,'2026-10-04','2026-10-04',progress);
+ assert.equal(counts.individual.actual,3);assert.equal(counts.individual.planned,1);assert.equal(counts.orientation.actual,null);assert.equal(counts.introductions.actual,0);
+ assert.equal(C.daily(d,'2026-10-05','2026-10-04',progress).individual.actual,null);
+});
 test('31-day month on fourth: 28 days; T10 A4 P3 gaps6 and3',()=>{
  const s=M.summarize(data([row(0),row(1),row(2)]),report,'2026-10','2026-10-04');assert.equal(s.remainingDays,28);assert.equal(s.metrics.individual.goal,10);assert.equal(s.metrics.individual.actual,4);assert.equal(s.metrics.individual.gap,6);assert.equal(s.metrics.individual.secured,3);assert.equal(s.metrics.individual.unsecured,3);
  assert.equal(s.metrics.orientation.goal,null);assert.equal(s.metrics.new_friends.goal,0);assert.equal(s.metrics.new_friends.gap,0);
