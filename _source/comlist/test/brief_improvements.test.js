@@ -19,6 +19,22 @@ function brief(extra){
     sources:{calendar:{ok:true},notion:{ok:true},gmail:{checkedThreads:1,uniqueThreads:1}}
   },extra||{});
 }
+test('自分の本日期限の未完了タスクだけにバッジを付け、メニューは完了・解除・同期に追従する',async t=>{
+ const w=loadApp(t).window,day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+ w.DAILY_TASKS=brief({date:day,tasks:[
+ {id:'self',type:'notion',section:'today',due:day,owner:'りゅうちゃん',title:'自分'},
+ {id:'implicit',type:'notion',section:'today',due:day,title:'自分のNotion'},
+ {id:'member',type:'gmail',section:'today',due:day,owner:'ラブリー',title:'他の人'},
+ {id:'todo',type:'notion',section:'todo',title:'期限なし'}]});
+ w.render();assert.equal(w.document.querySelector('[data-view="today"] .today-due-badge').textContent,'2');
+ w.renderTodayTasks();assert.equal(w.document.querySelectorAll('.today-task .today-due-badge').length,2);
+ w.setLocalTaskDone('self',true);assert.equal(w.document.querySelector('[data-view="today"] .today-due-badge').textContent,'1');
+ w.setLocalTaskDone('implicit',true);assert.equal(w.document.querySelectorAll('.today-due-badge').length,0);
+ w.setLocalTaskDone('self',false);assert.equal(w.document.querySelector('[data-view="today"] .today-due-badge').textContent,'1');
+ w.writeTaskObject('daily-task-schema:'+day,{version:2},w.TASK_PENDING_MEMORY);w.savePendingTasks(day,{});
+ w.taskStateRequest=async()=>({date:day,done:{self:true,implicit:true}});await w.syncTaskState();assert.equal(w.document.querySelectorAll('.today-due-badge').length,0);
+ w.DAILY_TASKS.date=w.FieldCalendarModel.shift(day,-1);w.renderTodayTasks();assert.equal(w.document.querySelectorAll('.today-due-badge').length,0);
+});
 
 test('撃破の履歴を今週と先週の合計で表示する',t=>{
   const w=loadApp(t).window;
