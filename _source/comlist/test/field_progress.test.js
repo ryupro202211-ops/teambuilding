@@ -68,6 +68,19 @@ test("現場数が未搭載の旧データでも画面を開ける", t => {
   dom.window.setView("field");
   assert.match(dom.window.document.getElementById("fieldwrap").textContent, /未報告/);
 });
+test('週合計は選択月内の日付範囲と記録日数を表示し、月外の実績を除く',t=>{
+ const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
+ const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());const w=dom.window;
+ const days=w.FieldCalendarModel.cells('2026-10-01','week');
+ w.FIELD_PROGRESS={days:days.map(day=>({activityDate:day,reportDate:day,values:{individual:day.slice(0,7)==='2026-09'?10:1}}))};
+ const box=w.document.createElement('div');box.innerHTML=w.fieldWeekTotalHTML({persons:[],records:[]},days,'2026-10-04',true,'2026-10');
+ assert.match(box.textContent,/10\/01〜10\/04/);assert.match(box.textContent,/個別実 4 \/ 予/);
+ assert.equal(box.querySelector('[title]').title,'実績の記録：0/4日');
+ assert.equal(box.querySelectorAll('[title]')[2].title,'実績の記録：4/4日');
+ assert.doesNotMatch(box.textContent,/実 4※/);
+ box.innerHTML=w.fieldWeekTotalHTML({persons:[],records:[]},days,'2026-10-04',true,'2026-11');
+ assert.match(box.textContent,/対象月の日付なし/);
+});
 test('日別画面はNotionの進捗を実績として表示する',t=>{
  const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
  const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());const w=dom.window;
