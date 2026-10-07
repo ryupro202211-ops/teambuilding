@@ -331,7 +331,7 @@ test('marks overdue rows by severity tier and sorts the worst first',t=>{
     {id:'m-1',type:'gmail',section:'memberOverdue',title:'軽い',detail:'9/15 デモ一郎',overdueDays:1},
     {id:'m-9',type:'gmail',section:'memberOverdue',title:'重い',detail:'9/6 デモ二郎',overdueDays:10},
     {id:'m-5',type:'gmail',section:'memberOverdue',title:'中くらい',detail:'9/11 デモ三郎',overdueDays:5},
-    {id:'t-1',type:'notion',section:'today',title:'本日期限',detail:'本日 19:00 デモ四郎'}
+    {id:'t-1',type:'notion',section:'today',title:'本日期限',detail:'本日 19:00 りゅうちゃん'}
   ]};
   w.renderTodayTasks();
 

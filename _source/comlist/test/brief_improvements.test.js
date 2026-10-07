@@ -19,6 +19,22 @@ function brief(extra){
     sources:{calendar:{ok:true},notion:{ok:true},gmail:{checkedThreads:1,uniqueThreads:1}}
   },extra||{});
 }
+test('本日期限の表示と優先タスクは本人担当だけにし、詳細欄の担当者も判定する',t=>{
+ const w=loadApp(t).window,day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+ const task=(id,extra)=>Object.assign({id,type:'gmail',section:'today',due:day,title:id},extra);
+ w.DAILY_TASKS=brief({date:day,tasks:[
+ task('member',{owner:'ラブリー'}),task('detail-member',{detail:'10/7 09:00 のぞみーる'}),
+ task('self',{owner:'りゅうちゃん'}),task('joint',{owner:'ノスタ・りゅうちゃん'}),
+ task('alias',{owner:'自分'}),task('detail-self',{detail:'10/7 23:00 りゅうちゃん'}),task('implicit'),
+ {id:'overdue-member',type:'gmail',section:'memberOverdue',owner:'ラブリー',overdueDays:1,title:'メンバー期限切れ'}]});
+ w.renderTodayTasks();
+ assert.deepEqual(Array.from(w.document.querySelectorAll('[data-section="today"] .today-task'),r=>r.dataset.taskId),['self','joint','alias','detail-self','implicit']);
+ assert.equal(w.document.querySelector('[data-section="today"] .today-due-badge').textContent,'5');
+ assert.equal(w.nextActionTask({}).id,'self');
+ assert.doesNotMatch(w.importantTasksHTML({}),/data-important-task="(?:member|detail-member)"/);
+ assert.equal(w.tasksIn('memberOverdue').length,1);
+ assert.equal(w.DAILY_TASKS.tasks.length,8);
+});
 test('自分の本日期限の未完了タスクだけにバッジを付け、メニューは完了・解除・同期に追従する',async t=>{
  const w=loadApp(t).window,day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
  w.DAILY_TASKS=brief({date:day,tasks:[
