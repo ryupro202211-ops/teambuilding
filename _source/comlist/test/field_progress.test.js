@@ -76,4 +76,8 @@ test('日別画面はNotionの進捗を実績として表示する',t=>{
  w.fieldMonthSelection=month;w.setView('field');
  const card=w.document.querySelector('[data-fc-day="'+day+'"]').closest('article');
  assert.match(card.textContent,/個別実 7 \/ 予/);assert.match(card.textContent,/オリエン実 — \/ 予/);
+ assert.equal(w.document.querySelectorAll('.field-calendar-week-total').length,6);
+ const week=card.parentElement.querySelectorAll('.field-calendar-week-total');
+ assert.ok(Array.from(week).some(e=>/個別実 7※ \/ 予/.test(e.textContent)));
+ w.fieldCalendarMode='week';w.renderFieldProgress();assert.equal(w.document.querySelectorAll('.field-calendar-week-total').length,1);
 });

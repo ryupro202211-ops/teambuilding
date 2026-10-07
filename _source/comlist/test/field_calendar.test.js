@@ -4,6 +4,11 @@ const people=Array.from({length:4},(_,i)=>({id:'person-calendar-000'+i,name:'Per
 const row=(id,patch={})=>({id:'record-calendar-000'+id,personId:people[0].id,kind:'individual',status:'confirmed',date:'2026-10-05',dueDate:'2026-10-05',purpose:'Fixture',outcomeConfirmed:false,newPersonForMonth:true,...patch});
 const data=records=>({goals:{'2026-10':{prospects:3,metrics:{orientation:null,introductions:null,individual:10,first_individual:null,new_friends:0}}},persons:people,records});
 const report={activityDate:'2026-10-03',values:{orientation:0,introductions:0,individual:4,first_individual:0,new_friends:0},goals:{}};
+test('weekly totals sum the seven visible days across months and preserve missing actuals',()=>{
+ const days=C.cells('2026-10-01','week');const progress={days:[{activityDate:days[0],reportDate:days[1],values:{individual:2,introductions:0}},{activityDate:days[4],reportDate:days[5],values:{individual:1}}]};
+ const result=C.week(data([row(0,{date:days[6],dueDate:days[6]})]),days,days[4],progress);
+ assert.equal(result.individual.actual,3);assert.equal(result.individual.recordedDays,2);assert.equal(result.individual.planned,1);assert.equal(result.orientation.actual,null);assert.equal(result.introductions.actual,0);
+});
 test('Notion activity-day progress replaces local actual without adding it twice; plans remain editable',()=>{
  const d=data([row(0,{date:'2026-10-04',status:'completed'}),row(1,{date:'2026-10-04',status:'confirmed'})]);
  const progress={days:[{activityDate:'2026-10-04',reportDate:'2026-10-05',values:{individual:3,orientation:null,introductions:0,first_individual:null,new_friends:null}}]};
