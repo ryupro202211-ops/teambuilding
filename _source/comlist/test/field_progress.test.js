@@ -81,6 +81,14 @@ test('週合計は選択月内の日付範囲と記録日数を表示し、月�
  box.innerHTML=w.fieldWeekTotalHTML({persons:[],records:[]},days,'2026-10-04',true,'2026-11');
  assert.match(box.textContent,/対象月の日付なし/);
 });
+test('Notion確認日時と活動日を区別し、確認日時のない旧データは未確認にする',t=>{
+ const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
+ const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());const w=dom.window;
+ w.FIELD_PROGRESS={months:[latest],checkedAt:'2026-10-07T00:45:00.000Z'};w.setView('field');
+ assert.match(w.document.querySelector('.field-check').textContent,/Notion確認：2026\/10\/07 09:45/);
+ assert.match(w.document.querySelector('.field-asof').textContent,/活動日 10月1日/);
+ delete w.FIELD_PROGRESS.checkedAt;w.renderFieldProgress();assert.match(w.document.querySelector('.field-check').textContent,/確認日時は未記録/);
+});
 test('日別画面はNotionの進捗を実績として表示する',t=>{
  const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];let DAILY_TASKS=[];</script>');
  const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());const w=dom.window;

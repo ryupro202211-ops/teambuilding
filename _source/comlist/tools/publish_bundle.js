@@ -12,6 +12,7 @@ function publishBundle(source,target){
   const rootFiles=['.gitignore','eslint.config.cjs','analysis_history.js','field_progress.js','app_sources.js','append_quote.js','artifact_bundle.js','brief_icons.js','build_brief.js','build.js','compose_daily_tasks.js','daily_tasks.js','event_records.js','fetch_gmail_tasks.js','fetch_materials.js','garden_paths.js','gmail_tasks.js','material_snapshot.js','migrate_events.js','parse_events.js','resolved_tasks.js','package.json','package-lock.json','sheet-api.gs'];
   rootFiles.push('field_goals_api.gs');
   rootFiles.push('calendar_schedule.js');
+  rootFiles.push('compose_field_progress.js');
   if(fs.existsSync(path.join(source,'_assets/dream-vision-board.png')))copy(source,'_assets/dream-vision-board.png',sourceTarget);
   if(fs.existsSync(path.join(source,'_assets/my-best-life-icon-v1.png')))copy(source,'_assets/my-best-life-icon-v1.png',sourceTarget);
   for(const ref of rootFiles)if(fs.existsSync(path.join(source,ref)))copy(source,ref,sourceTarget);

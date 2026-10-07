@@ -47,6 +47,10 @@ function validateFieldProgress(input) {
     if (!previous || previous.reportDate < record.reportDate) dayMap.set(record.activityDate, {activityDate:record.activityDate, reportDate:record.reportDate, url:record.url, values});
   }
   const result = { months };
+  if (input.checkedAt !== undefined) {
+    if (typeof input.checkedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(input.checkedAt) || Number.isNaN(Date.parse(input.checkedAt))) throw new Error('現場数の確認日時が不正です');
+    result.checkedAt = new Date(input.checkedAt).toISOString();
+  }
   if (input.days !== undefined) result.days = [...dayMap.values()].sort((a,b)=>a.activityDate.localeCompare(b.activityDate));
   return result;
 }
