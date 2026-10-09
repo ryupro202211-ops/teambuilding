@@ -1,3 +1,4 @@
+
 (function(root){
   'use strict';
   var minute=60000,day=86400000;

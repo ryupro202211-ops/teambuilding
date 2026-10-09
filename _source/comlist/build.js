@@ -304,7 +304,7 @@ function subtract(winS, winE, busy) {
   return free;
 }
 /**
- * 平日=昼12:00-13:30/夜18:00-24:00、土日=8:00-24:00 の中で、
+ * 平日=昼12:00-13:30/夜18:00-24:00、土日・祝日=8:00-24:00 の中で、
  * 予定を差し引いて連続1.5h(=90分)枠を先頭から詰めて切り出す。過去分(today の now 以前)は除外。
  */
 function computeSlots(events, todayStr, nowHM) {
@@ -314,7 +314,7 @@ function computeSlots(events, todayStr, nowHM) {
   for (let i = 0; i < 31; i++) {
     const d = new Date(start); d.setDate(d.getDate() + i);
     const dayStr = ymd(d), dow = d.getDay();
-    const weekend = (dow === 0 || dow === 6);
+    const weekend = (dow === 0 || dow === 6 || !!require('./_assets/js/calendar-availability').holidayName(dayStr));
     const windows = weekend ? [[8 * 60, 24 * 60]] : [[12 * 60, 13 * 60 + 30], [18 * 60, 24 * 60]];
     const busy = [];
     events.forEach((ev) => { const r = evMinOnDay(dayStr, ev); if (r) busy.push(r); });
