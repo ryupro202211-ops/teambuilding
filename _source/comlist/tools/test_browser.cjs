@@ -27,6 +27,7 @@ async function main(){
       if(body.action==='fieldGoalsRead')result={ok:true,state:fieldState,version:fieldVersion};
       else if(body.action==='fieldGoalsWrite'){fieldState=require('../_assets/js/field-model').validate(body.state);fieldVersion='v'+(++serial);result={ok:true,state:fieldState,version:fieldVersion,requestId:body.requestId};}
       else if(body.action==='read')result=offline?{ok:false,error:'offline'}:body.what==='contacts'?{ok:true,records:contacts}:{ok:true,events};
+      else if(body.action==='reminderState'){if(offline)result={ok:false};else{if(body.op==='set')done[body.id]=true;result={ok:true,version:1,done:Object.fromEntries((body.ids||[body.id]).filter(id=>done[id]).map(id=>[id,true]))};}}
       else if(body.action==='taskState'){if(offline)result={ok:false};else{if(body.op==='set'){if(body.done)done[body.id]=true;else delete done[body.id];}result={ok:true,date:body.date,done};}}
       else if(body.action==='create'){const record={_row:contacts.length+2,_version:'fixture-v'+(++serial),...body.values};contacts.push(record);result={ok:true,record};}
       else if(body.action==='eventDelete'){events=events.filter(e=>e.id!==body.id);result={ok:true,deletedId:body.id};}

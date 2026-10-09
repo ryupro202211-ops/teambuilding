@@ -2295,3 +2295,30 @@ function fieldGoalsWrite_(body){
   return fieldGoalsRead_();
 }
 // END GENERATED FIELD GOALS
+
+// Completion-only reminder state, independent of the daily task retention window.
+function reminderState_(body) {
+  var valid=function(id){return typeof id==='string'&&/^[a-f0-9]{64}$/.test(id);};
+  if(!body||!['get','set'].includes(body.op))return {ok:false,error:'invalid operation'};
+  if(body.op==='get'&&(!Array.isArray(body.ids)||body.ids.length>100||!body.ids.every(valid)))return {ok:false,error:'invalid ids'};
+  if(body.op==='set'&&(!valid(body.id)||body.done!==true))return {ok:false,error:'invalid completion'};
+  var lock=LockService.getScriptLock();lock.waitLock(10000);
+  try {
+    var props=PropertiesService.getScriptProperties(),ids=body.op==='get'?body.ids:[body.id],done={},buckets={};
+    ids.forEach(function(id){var key='REMINDER_DONE_'+id.slice(0,2);if(!buckets[key])buckets[key]=JSON.parse(props.getProperty(key)||'{}');if(buckets[key][id]===true)done[id]=true;});
+    if(body.op==='set'){
+      var key='REMINDER_DONE_'+body.id.slice(0,2),bucket=buckets[key];
+      if(!bucket[body.id]&&Object.keys(bucket).length>=110)return {ok:false,error:'reminder capacity reached'};
+      bucket[body.id]=true;props.setProperty(key,JSON.stringify(bucket));done[body.id]=true;
+    }
+    return {ok:true,version:1,done:done};
+  }finally{lock.releaseLock();}
+}
+// The add-on can also be installed as a separate GAS file without replacing existing code.
+var REMINDER_BASE_DO_POST=doPost;
+doPost=function(e){
+  var body;try{body=JSON.parse(e.postData.contents);}catch(error){return REMINDER_BASE_DO_POST(e);}
+  if(body.action!=='reminderState')return REMINDER_BASE_DO_POST(e);
+  try{var token=getToken_();if(!token||body.token!==token)return json_({ok:false,error:'unauthorized'});return json_(reminderState_(body));}
+  catch(error){return json_({ok:false,error:'reminder unavailable'});}
+};
