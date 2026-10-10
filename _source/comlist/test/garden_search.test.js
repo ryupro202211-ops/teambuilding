@@ -22,6 +22,8 @@ test('typing hides the previous detail and selecting a search result opens its d
   assert.equal(panel.hidden,false);
   search(w,'Beta');
   assert.equal(panel.hidden,true);
+  assert.ok(doc.body.classList.contains('garden-searching'));
+  assert.equal(doc.querySelector('.toolbar').nextElementSibling.id,'gardenwrap');
   assert.equal(doc.querySelectorAll('.plant').length,1);
   assert.equal(doc.querySelector('.plant-name').textContent,'Beta');
   w.render();assert.equal(panel.hidden,true);
@@ -31,6 +33,8 @@ test('typing hides the previous detail and selecting a search result opens its d
   search(w,'missing');assert.equal(panel.hidden,true);
   assert.equal(doc.querySelectorAll('.plant').length,0);
   search(w,'');assert.equal(panel.hidden,false);
+  assert.equal(doc.body.classList.contains('garden-searching'),false);
+  assert.equal(doc.getElementById('gardenwrap').nextElementSibling.id,'listwrap');
   assert.equal(doc.querySelectorAll('.plant').length,2);
 });
 
