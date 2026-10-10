@@ -57,7 +57,25 @@ async function main(){
     await page.goto(base+'/baseline.html');await unlock();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'before.png'),fullPage:true});measurements.before=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
     await loaded();await page.mouse.move(1270,0);await page.waitForTimeout(250);await page.screenshot({path:path.join(target,'after.png'),fullPage:true});measurements.after=await page.evaluate(()=>({loadMs:performance.getEntriesByType('navigation')[0].loadEventEnd,dom:document.querySelectorAll('*').length}));
     assert.equal(await page.locator('[data-view=garden] .meeting-new-badge').textContent(),'1');
-    await page.locator('[data-view=garden]').click();await page.locator('.meeting-reminder-toggle').click();
+    await page.locator('[data-view=garden]').click();
+    for(const width of [1280,390]){
+      await page.setViewportSize({width,height:900});
+      await page.locator('.plant').first().click();
+      assert.equal(await page.locator('#gdpanel').isVisible(),true);
+      const name=await page.locator('.gd-panel-name').textContent();
+      await page.locator('#search').fill(name);
+      assert.equal(await page.locator('#gdpanel').isVisible(),false);
+      assert.ok(await page.locator('.plant').count()>0);
+      await page.locator('.plant').first().click();
+      assert.equal(await page.locator('#gdpanel').isVisible(),true);
+      await page.locator('#search').fill('no-matching-friend');
+      assert.equal(await page.locator('#gdpanel').isVisible(),false);
+      assert.equal(await page.locator('.plant').count(),0);
+      await page.locator('#search').fill('');
+      assert.equal(await page.locator('#gdpanel').isVisible(),true);
+    }
+    await page.setViewportSize({width:1280,height:900});
+    await page.locator('.meeting-reminder-toggle').click();
     await page.screenshot({path:path.join(target,'meeting-reminders.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.meeting-new-badge:not(.today-due-badge)').count(),2);assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth<=innerWidth),true);await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.meeting-new-badge').first().evaluate(e=>getComputedStyle(e).animationName),'none');await page.screenshot({path:path.join(target,'meeting-reminders-mobile.png'),fullPage:true});await page.emulateMedia({reducedMotion:'no-preference'});await page.setViewportSize({width:1280,height:900});
     await page.evaluate(()=>{window.reminderPersistOriginal=persistSavedState;persistSavedState=()=>Promise.resolve(false);});await page.locator('[data-reminder-id]').click();await page.waitForFunction(()=>!MEETING_REMINDER_BUSY);assert.equal(await page.locator('[data-view=garden] .meeting-new-badge').textContent(),'1');

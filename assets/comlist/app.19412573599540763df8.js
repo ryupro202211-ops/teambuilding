@@ -1,3 +1,4 @@
+
 function setView(v){
   if(v === "garden") GARDEN_DETAIL_HIDDEN = false;
   VIEW = v;
@@ -75,5 +76,4 @@ document.querySelectorAll("#catfilter input").forEach(function(c){
   c.addEventListener("change", render);
 });
 
-renderEvents();
-setView("today");
+/* 描画は復号後に行う */
