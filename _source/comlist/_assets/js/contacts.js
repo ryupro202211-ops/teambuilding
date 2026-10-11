@@ -619,23 +619,30 @@ function bindGardenFriendPreviews(){
     popup.id='garden-friend-preview';popup.className='garden-friend-preview';
     popup.setAttribute('role','tooltip');popup.hidden=true;document.body.appendChild(popup);
     var state={popup:popup,anchor:null,timer:null};GARDEN_FRIEND_PREVIEW=state;
-    state.hide=function(){clearTimeout(state.timer);if(state.anchor)state.anchor.removeAttribute('aria-describedby');state.anchor=null;popup.hidden=true;};
+    state.hide=function(){clearTimeout(state.timer);clearTimeout(state.pressTimer);if(state.anchor)state.anchor.removeAttribute('aria-describedby');state.anchor=null;popup.hidden=true;};
     state.defer=function(){clearTimeout(state.timer);state.timer=setTimeout(state.hide,150);};
     popup.addEventListener('pointerenter',function(){clearTimeout(state.timer);});
-    popup.addEventListener('pointerleave',state.defer);
+    popup.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')state.defer();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')state.hide();});
+    document.addEventListener('pointerdown',function(e){if(state.anchor&&!state.anchor.contains(e.target)&&!popup.contains(e.target))state.hide();});
     window.addEventListener('resize',state.hide);
     window.addEventListener('scroll',function(e){if(!popup.contains(e.target))state.hide();},true);
   }
   var state=GARDEN_FRIEND_PREVIEW;state.hide();
   document.querySelectorAll('#garden .plant').forEach(function(button){
-    function show(){
+    function show(touch){
       var person=DATA.find(function(o){return plantKey(o)===button.getAttribute('data-k');});
       if(!person)return;
       state.hide();state.anchor=button;
-      state.popup.innerHTML='<strong>'+esc(person['名前(あだ名)']||'(名前なし)')+'</strong>'
+      var age=String(person['現在の年齢']??'').trim();
+      if(/^\d+(?:\.\d+)?$/.test(age))age+='歳';
+      state.popup.setAttribute('role',touch?'dialog':'tooltip');
+      state.popup.setAttribute('aria-label',String(person['名前(あだ名)']||'(名前なし)'));
+      state.popup.innerHTML=(touch?'<button type="button" class="garden-preview-close" aria-label="閉じる">×</button>':'')+'<strong>'+esc(person['名前(あだ名)']||'(名前なし)')+'</strong>'
         +'<div><b>出会った場所</b><p>'+esc(String(person['出会い(どこで)']||'').trim()||'未記入')+'</p></div>'
-        +'<div><b>人物像</b><p>'+esc(String(person['人物像']||'').trim()||'未記入')+'</p></div>';
+        +'<div><b>人物像</b><p>'+esc(String(person['人物像']||'').trim()||'未記入')+'</p></div>'
+        +'<div><b>年齢</b><p>'+esc(age||'未記入')+'</p></div>';
+      var close=state.popup.querySelector('.garden-preview-close');if(close)close.addEventListener('click',state.hide);
       state.popup.hidden=false;button.setAttribute('aria-describedby',state.popup.id);
       var rect=button.getBoundingClientRect(),box=state.popup.getBoundingClientRect(),gap=8;
       state.popup.style.left=Math.max(gap,Math.min(rect.left,innerWidth-box.width-gap))+'px';
@@ -644,10 +651,21 @@ function bindGardenFriendPreviews(){
       state.popup.style.top=Math.max(gap,Math.min(top,innerHeight-box.height-gap))+'px';
     }
     button.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')show();});
-    button.addEventListener('pointerleave',state.defer);
+    var down=null,held=false;
+    function cancelPress(){clearTimeout(state.pressTimer);down=null;}
+    button.addEventListener('pointerdown',function(e){
+      if(e.pointerType!=='touch'&&e.pointerType!=='pen')return;
+      cancelPress();held=false;down={id:e.pointerId,x:e.clientX,y:e.clientY};
+      state.pressTimer=setTimeout(function(){if(down){show(true);held=true;}},550);
+    });
+    button.addEventListener('pointermove',function(e){if(down&&e.pointerId===down.id&&Math.hypot(e.clientX-down.x,e.clientY-down.y)>10){cancelPress();if(held){held=false;state.hide();}}});
+    button.addEventListener('pointerup',cancelPress);
+    button.addEventListener('pointercancel',function(){cancelPress();held=false;state.hide();});
+    button.addEventListener('contextmenu',function(e){if(down||held)e.preventDefault();});
+    button.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')state.defer();else cancelPress();});
     button.addEventListener('focus',function(){if(button.matches(':focus-visible'))show();});
     button.addEventListener('blur',state.hide);
-    button.addEventListener('click',state.hide);
+    button.addEventListener('click',function(e){if(held){held=false;e.preventDefault();e.stopImmediatePropagation();return;}state.hide();},true);
   });
 }
 function renderGarden(){

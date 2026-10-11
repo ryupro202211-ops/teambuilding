@@ -96,7 +96,7 @@ async function main(){
     await page.locator('.meeting-reminder-toggle').click();
     await page.screenshot({path:path.join(target,'meeting-reminders.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.meeting-new-badge:not(.today-due-badge)').count(),2);assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth<=innerWidth),true);await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.meeting-new-badge').first().evaluate(e=>getComputedStyle(e).animationName),'none');await page.screenshot({path:path.join(target,'meeting-reminders-mobile.png'),fullPage:true});await page.emulateMedia({reducedMotion:'no-preference'});await page.setViewportSize({width:1280,height:900});
-    const mobileContext=await browser.newContext({viewport:{width:390,height:844}});
+    const mobileContext=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
     await mobileContext.addInitScript(()=>{if(window===window.top)localStorage.setItem('comunitylisttolevel9','fixture-token');});
     await mobileContext.route('https://**/*',route=>route.abort());
     const reminderPhone=await mobileContext.newPage();await reminderPhone.goto(base+'/comlist.html');
@@ -104,6 +104,19 @@ async function main(){
     await reminderPhone.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');
     await reminderPhone.locator('[data-view=garden]').click();
     assert.equal(await reminderPhone.locator('[data-view=garden] .meeting-new-badge').textContent(),'1');
+    const touchPlant=reminderPhone.locator('.plant').first();await touchPlant.scrollIntoViewIfNeeded();
+    const touchBox=await touchPlant.boundingBox(),selectionBeforeHold=await reminderPhone.evaluate(()=>SELECTED);
+    const touchSession=await mobileContext.newCDPSession(reminderPhone);
+    await touchSession.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:touchBox.x+touchBox.width/2,y:touchBox.y+touchBox.height/2}]});
+    const touchPreview=reminderPhone.locator('#garden-friend-preview');await touchPreview.waitFor({state:'visible'});
+    await touchSession.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    assert.equal(await touchPreview.isVisible(),true);assert.equal(await reminderPhone.evaluate(()=>SELECTED),selectionBeforeHold);
+    assert.equal(await touchPreview.locator('p').nth(1).textContent(),'人物像のテスト\n原文を表示');
+    assert.equal(await touchPreview.locator('p').nth(2).textContent(),'未記入');
+    await reminderPhone.screenshot({path:path.join(target,'friend-preview-touch.png')});
+    await touchPreview.locator('button').tap();assert.equal(await touchPreview.isVisible(),false);
+    await touchPlant.tap();assert.equal(await reminderPhone.locator('#gdpanel').isVisible(),true);
+    await touchSession.detach();
     await page.evaluate(()=>{window.reminderPersistOriginal=persistSavedState;persistSavedState=()=>Promise.resolve(false);});await page.locator('[data-reminder-id]').click();await page.waitForFunction(()=>!MEETING_REMINDER_BUSY);assert.equal(await page.locator('[data-view=garden] .meeting-new-badge').textContent(),'1');
     await page.evaluate(()=>{persistSavedState=window.reminderPersistOriginal;});await page.locator('[data-reminder-id]').click();await page.waitForFunction(()=>!MEETING_REMINDER_BUSY);assert.equal(await page.locator('[data-view=garden] .meeting-new-badge').count(),0);
     await reminderPhone.locator('#garden-reminders button').filter({hasText:'リマインドを同期'}).click();
