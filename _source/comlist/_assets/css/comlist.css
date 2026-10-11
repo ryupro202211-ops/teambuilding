@@ -715,6 +715,8 @@ body > header { display:grid; grid-template-columns:minmax(300px, .85fr) minmax(
 .friend-advice h3 { margin:0; font-size:14px; color:#315b48; }
 .friend-advice-note { margin:6px 0 10px; font-size:11px; color:#637b6e; }
 .friend-advice-text { white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; line-height:1.8; }
+.friend-advice.friend-portrait { background:#eff5ff; border-color:#c6d9f1; }
+.friend-portrait .friend-advice-text { margin-top:8px; }
 
 /* Field calendar and action-ready availability. */
 .field-calendar-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
@@ -972,3 +974,14 @@ dialog::backdrop{background:#132b4266;backdrop-filter:blur(3px)}
 @media(prefers-reduced-motion:reduce){.tab[data-view],.btn,.plant,.slots-copy,.slot-week-controls button{transition:none}.tab[data-view]:hover,.plant:hover,.btn:hover{transform:none}}
 
 #calwrap .slot-week-day.is-holiday .slot-week-date{color:#b42332;background:#fff0f1}.slot-holiday-name{display:block;font-size:10px;white-space:normal;line-height:1.2}
+
+/* Shared calendar and event workspace. */
+#calendar-events { display:none; }
+body.view-calendar #calendar-events { display:grid; grid-template-columns:minmax(0,2fr) minmax(280px,1fr); gap:20px; align-items:start; }
+body.view-calendar #calendar-events > #calwrap, body.view-calendar #calendar-events > #events { display:block; min-width:0; }
+#calendar-events #slots { margin-top:0; }
+#calendar-events .events-box { margin-top:0; }
+#calendar-events .events-head { flex-wrap:wrap; gap:8px; }
+#calendar-events .events-title { flex:1; white-space:nowrap; }
+#calendar-events .events-add { flex-basis:100%; margin-left:0; white-space:nowrap; }
+@media(max-width:1100px) { body.view-calendar #calendar-events { grid-template-columns:minmax(0,1fr); } }

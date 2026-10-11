@@ -61,8 +61,7 @@
     <button class="tab active" data-view="garden"><span class="menu-icon menu-garden" aria-hidden="true"></span><span>人脈ガーデン</span></button>
     <button class="tab" data-view="analytics"><svg class="menu-icon menu-pixel menu-analytics" viewBox="0 0 24 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><path fill="#6c5944" d="M3 3h18v2h2v16h-2v2H3v-2H1V5h2z"/><path fill="#ead7b5" d="M3 5h18v16H3z"/><path fill="#354a40" d="M5 7h14v12H5z"/><path fill="#cfb17d" d="M6 15h3v3H6zm4-4h3v7h-3zm4-3h3v10h-3z"/><path fill="#f4e6ce" d="M6 15h3v1H6zm4-4h3v1h-3zm4-3h3v1h-3z"/></svg><span>分析</span></button>
     <button class="tab" data-view="field"><svg class="menu-icon menu-pixel menu-field" viewBox="0 0 24 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><path fill="#6c5944" d="M3 3h18v2h2v16h-2v2H3v-2H1V5h2z"/><path fill="#ead7b5" d="M3 5h18v16H3z"/><path fill="#354a40" d="M5 7h14v12H5z"/><path fill="#cfb17d" d="M6 8h3v3H6zm5 0h3v3h-3zm5 0h2v3h-2zM6 13h3v3H6zm5 0h3v3h-3zm5 0h2v3h-2z"/><path fill="#f4e6ce" d="M6 8h2v1H6zm5 0h2v1h-2zm5 0h2v1h-2zM6 13h2v1H6zm5 0h2v1h-2z"/><path fill="#9ac09d" d="M15 17h2v1h1v-2h2v3h-2v1h-2v-1h-1z"/></svg><span>現場数</span></button>
-    <button class="tab" data-view="calendar" id="tab-cal"><span class="menu-icon menu-calendar" aria-hidden="true"></span><span>カレンダー</span></button>
-    <button class="tab" data-view="events" id="tab-events"><span class="menu-icon menu-events" aria-hidden="true"></span><span>今後のイベント</span></button>
+    <button class="tab" data-view="calendar" id="tab-cal" aria-label="カレンダー・イベント"><span class="menu-icon menu-calendar" aria-hidden="true"></span><span>カレンダー<br>イベント</span></button>
   </div>
 </nav>
 <main class="content">
@@ -98,7 +97,6 @@
 </div>
 <div id="analyticswrap"></div>
 <div id="fieldwrap"></div>
-<div id="events"></div>
 <div id="gardenwrap">
   <section id="garden-reminders" aria-label="会う予定のリマインド"></section>
   <div id="gdpanel"></div>
@@ -116,10 +114,13 @@
   </div>
 </div>
 <div id="listwrap"><div id="app"></div></div>
+<div id="calendar-events">
 <div id="calwrap">
   <div id="slots"></div>
   <iframe id="calframe" class="cal-frame" src="https://calendar.google.com/calendar/embed?src=ryuhei.otsuka%40gmail.com&amp;ctz=Asia%2FTokyo&amp;mode=WEEK&amp;wkst=2&amp;hl=ja&amp;showTitle=0" title="Googleカレンダー" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
   <div class="cal-note">※ 自分（Googleアカウント）でログインしている端末でだけ予定が表示されます。ログアウト中や別アカウント・他の人には空に見えます。</div>
+</div>
+<div id="events"></div>
 </div>
 <footer id="foot"></footer>
 </main>

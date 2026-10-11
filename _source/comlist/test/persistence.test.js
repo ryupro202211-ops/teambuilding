@@ -90,3 +90,10 @@ test('same-day cached edits cannot hide newly published read-only friendship adv
  const w=app(t);await w.initializeSavedState('fixture-pass','2026-01-01');w.eval('DATA[0]["仕事(O)"]="cached edit"');await w.persistSavedState();
  const v=app(t,snapshot(w));v.eval('DATA[0]["仲間づくりアドバイス"]="new published advice"');await v.initializeSavedState('fixture-pass','2026-01-01');assert.equal(data(v)[0]['仲間づくりアドバイス'],'new published advice');assert.equal(data(v)[0]['仕事(O)'],'cached edit');
 });
+
+test('published portrait replaces stale cached portrait, including a cleared AB cell',async t=>{
+ for(const portrait of ['new portrait','']){
+  const w=app(t);await w.initializeSavedState('fixture-pass','2026-01-01');w.eval('DATA[0]["人物像"]="old portrait";DATA[0]["仕事(O)"]="cached edit"');await w.persistSavedState();
+  const v=app(t,snapshot(w));v.eval('DATA[0]["人物像"]='+JSON.stringify(portrait));await v.initializeSavedState('fixture-pass','2026-01-01');assert.equal(data(v)[0]['人物像'],portrait);assert.equal(data(v)[0]['仕事(O)'],'cached edit');
+ }
+});

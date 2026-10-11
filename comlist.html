@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="comlist-manifest" content="assets/comlist/manifest.2843f9ef99af42f10c7e.json">
+<meta name="comlist-manifest" content="assets/comlist/manifest.d61c37b2ca58d75e3282.json">
 <meta charset="UTF-8">
   <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイベストライフ</title>
 <link data-comlist-image="my-best-life-icon" rel="icon" type="image/png" href="assets/comlist/my-best-life-icon.b6430e3ec86599015082.png">
-<link data-comlist="comlist" rel="stylesheet" href="assets/comlist/comlist.b12b98798ed4ea9bacfe.css">
+<link data-comlist="comlist" rel="stylesheet" href="assets/comlist/comlist.7dca3ca56097e39e4338.css">
 </head>
 <body>
 <header>
@@ -63,8 +63,7 @@
     <button class="tab active" data-view="garden"><span class="menu-icon menu-garden" aria-hidden="true"></span><span>人脈ガーデン</span></button>
     <button class="tab" data-view="analytics"><svg class="menu-icon menu-pixel menu-analytics" viewBox="0 0 24 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><path fill="#6c5944" d="M3 3h18v2h2v16h-2v2H3v-2H1V5h2z"/><path fill="#ead7b5" d="M3 5h18v16H3z"/><path fill="#354a40" d="M5 7h14v12H5z"/><path fill="#cfb17d" d="M6 15h3v3H6zm4-4h3v7h-3zm4-3h3v10h-3z"/><path fill="#f4e6ce" d="M6 15h3v1H6zm4-4h3v1h-3zm4-3h3v1h-3z"/></svg><span>分析</span></button>
     <button class="tab" data-view="field"><svg class="menu-icon menu-pixel menu-field" viewBox="0 0 24 24" aria-hidden="true" focusable="false" shape-rendering="crispEdges"><path fill="#6c5944" d="M3 3h18v2h2v16h-2v2H3v-2H1V5h2z"/><path fill="#ead7b5" d="M3 5h18v16H3z"/><path fill="#354a40" d="M5 7h14v12H5z"/><path fill="#cfb17d" d="M6 8h3v3H6zm5 0h3v3h-3zm5 0h2v3h-2zM6 13h3v3H6zm5 0h3v3h-3zm5 0h2v3h-2z"/><path fill="#f4e6ce" d="M6 8h2v1H6zm5 0h2v1h-2zm5 0h2v1h-2zM6 13h2v1H6zm5 0h2v1h-2z"/><path fill="#9ac09d" d="M15 17h2v1h1v-2h2v3h-2v1h-2v-1h-1z"/></svg><span>現場数</span></button>
-    <button class="tab" data-view="calendar" id="tab-cal"><span class="menu-icon menu-calendar" aria-hidden="true"></span><span>カレンダー</span></button>
-    <button class="tab" data-view="events" id="tab-events"><span class="menu-icon menu-events" aria-hidden="true"></span><span>今後のイベント</span></button>
+    <button class="tab" data-view="calendar" id="tab-cal" aria-label="カレンダー・イベント"><span class="menu-icon menu-calendar" aria-hidden="true"></span><span>カレンダー<br>イベント</span></button>
   </div>
 </nav>
 <main class="content">
@@ -100,7 +99,6 @@
 </div>
 <div id="analyticswrap"></div>
 <div id="fieldwrap"></div>
-<div id="events"></div>
 <div id="gardenwrap">
   <section id="garden-reminders" aria-label="会う予定のリマインド"></section>
   <div id="gdpanel"></div>
@@ -118,21 +116,24 @@
   </div>
 </div>
 <div id="listwrap"><div id="app"></div></div>
+<div id="calendar-events">
 <div id="calwrap">
   <div id="slots"></div>
   <iframe id="calframe" class="cal-frame" src="https://calendar.google.com/calendar/embed?src=ryuhei.otsuka%40gmail.com&amp;ctz=Asia%2FTokyo&amp;mode=WEEK&amp;wkst=2&amp;hl=ja&amp;showTitle=0" title="Googleカレンダー" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
   <div class="cal-note">※ 自分（Googleアカウント）でログインしている端末でだけ予定が表示されます。ログアウト中や別アカウント・他の人には空に見えます。</div>
 </div>
+<div id="events"></div>
+</div>
 <footer id="foot"></footer>
 </main>
 </div>
-<div id="lockgate" style="position:fixed;inset:0;z-index:9999;background:#f2f7ee;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;font-family:sans-serif;"><div style="font-size:22px;margin-bottom:12px;"><span class="brief-icon bi-18" role="img" aria-label="ロック"></span> マイベストライフ</div><input id="lockpass" type="password" placeholder="パスフレーズ" style="padding:10px 12px;font-size:15px;border:1px solid #cdddc5;border-radius:8px;"><button id="lockbtn" style="margin-left:8px;padding:10px 16px;font-size:15px;border:0;border-radius:8px;background:#2f8f4e;color:#fff;font-weight:700;cursor:pointer;"><span class="brief-icon bi-20" aria-hidden="true"></span> ひらく</button><label style="display:block;margin-top:10px;font-size:13px;color:#5f6f58;"><input id="lockremember" type="checkbox"> この端末で30日間覚える</label><div id="lockerr" style="color:#c0392b;font-size:13px;margin-top:10px;min-height:18px;"></div><div style="color:#7a8a72;font-size:12px;margin-top:14px;">データ更新日: 2026/10/11</div></div></div>
-<script data-comlist="payload" src="assets/comlist/payload.37bca6f6b35bccca7d34.js"></script>
+<div id="lockgate" style="position:fixed;inset:0;z-index:9999;background:#f2f7ee;display:flex;align-items:center;justify-content:center;"><div style="text-align:center;font-family:sans-serif;"><div style="font-size:22px;margin-bottom:12px;"><span class="brief-icon bi-18" role="img" aria-label="ロック"></span> マイベストライフ</div><input id="lockpass" type="password" placeholder="パスフレーズ" style="padding:10px 12px;font-size:15px;border:1px solid #cdddc5;border-radius:8px;"><button id="lockbtn" style="margin-left:8px;padding:10px 16px;font-size:15px;border:0;border-radius:8px;background:#2f8f4e;color:#fff;font-weight:700;cursor:pointer;"><span class="brief-icon bi-20" aria-hidden="true"></span> ひらく</button><label style="display:block;margin-top:10px;font-size:13px;color:#5f6f58;"><input id="lockremember" type="checkbox"> この端末で30日間覚える</label><div id="lockerr" style="color:#c0392b;font-size:13px;margin-top:10px;min-height:18px;"></div><div style="color:#7a8a72;font-size:12px;margin-top:14px;">データ更新日: 2026/10/12</div></div></div>
+<script data-comlist="payload" src="assets/comlist/payload.45bdb4de1c4af77241c0.js"></script>
 <script data-comlist="lock" src="assets/comlist/lock.3c99b2aa423e5c49ece5.js"></script>
-<script data-comlist="storage" src="assets/comlist/storage.6e4e076b9b56a71faaac.js"></script>
+<script data-comlist="storage" src="assets/comlist/storage.a17f75032188b41c63d6.js"></script>
 <script data-comlist="config" src="assets/comlist/config.61498ce56695bdeae540.js"></script>
 <script data-comlist="api" src="assets/comlist/api.198911bf75aae430f1ff.js"></script>
-<script data-comlist="contacts" src="assets/comlist/contacts.2d40225fc489e59ea17d.js"></script>
+<script data-comlist="contacts" src="assets/comlist/contacts.ab34ac8099dd0003c128.js"></script>
 <script data-comlist="meeting-reminders" src="assets/comlist/meeting-reminders.bb3521623ea78013ea3e.js"></script>
 <script data-comlist="contact-actions" src="assets/comlist/contact-actions.2c08d40a2906743b9c57.js"></script>
 <script data-comlist="events" src="assets/comlist/events.058c122e17552465570a.js"></script>
@@ -145,6 +146,6 @@
 <script data-comlist="field-calendar" src="assets/comlist/field-calendar.83c6bb2cd8532fcf4d73.js"></script>
 <script data-comlist="calendar-availability" src="assets/comlist/calendar-availability.a539c790eb6c29b7ae53.js"></script>
 <script data-comlist="calendar-slots" src="assets/comlist/calendar-slots.2815e27d51aa2969a873.js"></script>
-<script data-comlist="app" src="assets/comlist/app.1cba8b916d4159bb33a5.js"></script>
+<script data-comlist="app" src="assets/comlist/app.2e9eaf8c6b8e4df0550e.js"></script>
 </body>
 </html>

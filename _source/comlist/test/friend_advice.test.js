@@ -10,6 +10,25 @@ function gas(header='仲間づくりアドバイス'){
  const sh={getLastRow:()=>rows.length,getMaxColumns:()=>45,getRange(r,c,n=1,m=1){ranges.push({r,c,n,m});return {getValues:()=>Array.from({length:n},(_,i)=>Array.from({length:m},(_,j)=>rows[r-1+i]?.[c-1+j]??'')),setValues:v=>writes.push({r,c,v})};}};
  const ctx=vm.createContext({SpreadsheetApp:{openById:()=>({getSheetByName:()=>sh})},Utilities:{DigestAlgorithm:{SHA_256:'sha256'},Charset:{UTF_8:'utf8'},computeDigest:(_,s)=>[...crypto.createHash('sha256').update(s).digest()]}});vm.runInContext(fs.readFileSync(path.join(__dirname,'../sheet-api.gs'),'utf8'),ctx);return {ctx,rows,writes,ranges};
 }
+
+test('ABの人物像は読み取り専用で取得し、バージョンと編集列を変えない',()=>{
+ const g=gas();g.rows[0][27]='人物像';g.rows[1][27]='人物像の原文';
+ const first=g.ctx.readContacts_()[0];assert.equal(first['人物像'],'人物像の原文');
+ g.rows[1][27]='新しい人物像';assert.equal(g.ctx.readContacts_()[0]._version,first._version);
+ assert.equal(g.ctx.EDITABLE['人物像'],undefined);assert.equal(g.writes.length,0);
+ g.rows[0][27]='別の列';assert.equal(g.ctx.readContacts_()[0]['人物像'],undefined);
+});
+
+test('人物像をヒントの上へ安全に表示し、空欄のときは省略する',t=>{
+ const html=require('../app_sources').readApp('_assets/list.html').replace('<script src="data.js"></script>','<script>let DATA=[];</script>');
+ const dom=new JSDOM(html,{runScripts:'dangerously',url:'http://localhost'});t.after(()=>dom.window.close());
+ const person={_row:2,'カテゴリー':'A','名前(あだ名)':'Fixture','人物像':'原文\n<img src=x onerror="alert(1)">','仲間づくりアドバイス':'ヒント'};
+ dom.window.eval('DATA='+JSON.stringify([person])+';SELECTED=plantKey(DATA[0]);renderPanel();');
+ const box=dom.window.document.querySelector('.friend-portrait');assert.ok(box);
+ assert.equal(box.nextElementSibling.classList.contains('friend-advice'),true);
+ assert.equal(box.querySelector('.friend-advice-text').textContent,person['人物像']);assert.equal(box.querySelector('img,input,textarea'),null);
+ assert.equal(dom.window.friendPortraitHTML({}), '');
+});
 test('AAの見出し一致時だけ人物へ助言を取込み、Zメモ・編集列・CASを変えず書込まない',()=>{
  const g=gas(),out=g.ctx.readContacts_();assert.equal(out[0]['メモ'],'メモ原本');assert.match(out[0]['仲間づくりアドバイス'],/本人の希望/);assert.equal(out[1]['仲間づくりアドバイス'],undefined);const version=out[0]._version;g.rows[1][26]='別担当が更新した助言';assert.equal(g.ctx.readContacts_()[0]._version,version);assert.equal(g.ctx.COLUMNS.length,26);assert.equal(g.ctx.EDITABLE['仲間づくりアドバイス'],undefined);assert.equal(g.writes.length,0);assert.ok(g.ranges.some(r=>r.c===27&&r.r===2&&r.m===1));
 });

@@ -1,4 +1,5 @@
 function setView(v){
+  if(v === "events") v = "calendar";
   if(v === "garden") GARDEN_DETAIL_HIDDEN = false;
   VIEW = v;
   document.body.className = "view-" + v;
@@ -8,8 +9,7 @@ function setView(v){
   document.getElementById("sort").style.display = (v==="list") ? "" : "none";
   if(v === "analytics") renderAnalytics();
   if(v === "field") { renderFieldProgress(); if(typeof refreshFieldGoals==='function')refreshFieldGoals(); }
-  if(v === "calendar") loadCalendar();
-  if(v === "events") { renderEvents(); refreshEventsFromApi(); }
+  if(v === "calendar") { loadCalendar(); renderEvents(); refreshEventsFromApi(); }
   if(v === "today") {
     loadToday();
     document.documentElement.scrollTop = 0;
@@ -58,7 +58,7 @@ function renderLegacySlots(){
   });
 }
 /* カレンダーURLが未設定ならタブを隠す */
-if(!CALENDAR_EMBED_URL){ var _ct = document.getElementById("tab-cal"); if(_ct) _ct.style.display = "none"; }
+if(!CALENDAR_EMBED_URL){ var _cf = document.getElementById("calframe"); if(_cf) _cf.style.display = "none"; }
 
 document.querySelectorAll(".tab").forEach(function(t){
   t.addEventListener("click", function(){ setView(this.getAttribute("data-view")); });

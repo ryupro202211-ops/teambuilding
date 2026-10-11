@@ -574,6 +574,9 @@ function readContacts_() {
   // AA is read-only and deliberately outside COLUMNS/EDITABLE and contact CAS.
   var adviceReady=(!sh.getMaxColumns||sh.getMaxColumns()>=27)&&cellText_(sh.getRange(1,27,1,1).getValues()[0][0])==='仲間づくりアドバイス';
   var advice=adviceReady?sh.getRange(2,27,last-1,1).getValues():[];
+  // AB is read-only and excluded from contact editing and CAS.
+  var portraitReady=(!sh.getMaxColumns||sh.getMaxColumns()>=28)&&cellText_(sh.getRange(1,28,1,1).getValues()[0][0])==='人物像';
+  var portraits=portraitReady?sh.getRange(2,28,last-1,1).getValues():[];
   var tracking=contactTrackingReady_(sh),meta=tracking?sh.getRange(2,CONTACT_TRACKING_START_COLUMN,last-1,CONTACT_TRACKING_COLUMN_COUNT).getValues():[];
   var records = [];
   values.forEach(function (row, i) {
@@ -581,6 +584,7 @@ function readContacts_() {
     if (CONFIG.CATEGORIES.indexOf(cat) === -1) return;
     var o = { _row: i + 2, _version:contactVersionFromCells_(row,tracking?meta[i]:null) };
     if(adviceReady&&cellText_(advice[i][0]))o['仲間づくりアドバイス']=cellText_(advice[i][0]);
+    if(portraitReady)o['人物像']=cellText_(portraits[i][0]);
     if(tracking&&/^(contacted|waiting|planning)$/.test(cellText_(meta[i][0])))o._contactState={status:cellText_(meta[i][0]),date:cellText_(meta[i][1])};
     for (var c = 0; c < COLUMNS.length; c++) {
       var v = cellText_(row[c]);

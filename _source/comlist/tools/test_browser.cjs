@@ -8,7 +8,7 @@ const runtime=process.env.CODEX_NODE_MODULES||'C:/Users/ryupr/.cache/codex-runti
 const {chromium}=require(path.join(runtime,'playwright'));
 async function main(){
   const day=new Date();const date=day.getFullYear()+'-'+String(day.getMonth()+1).padStart(2,'0')+'-'+String(day.getDate()).padStart(2,'0');
-  let contacts=[{_row:2,_version:'fixture-v1','カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','アクション日':date,'次会う日':new Date(Date.parse(date+'T00:00:00Z')+7*86400000).toISOString().slice(0,10),'メモ':'折りたたみのテスト\n全文は開いたときに表示'}];
+  let contacts=[{_row:2,_version:'fixture-v1','カテゴリー':'A','名前(あだ名)':'ブラウザテスト','仕事(O)':'初期プロフィール','人物像':'人物像のテスト\n原文を表示','仲間づくりアドバイス':'会話メモのテスト','アクション日':date,'次会う日':new Date(Date.parse(date+'T00:00:00Z')+7*86400000).toISOString().slice(0,10),'メモ':'折りたたみのテスト\n全文は開いたときに表示'}];
   let events=[{id:'evt_browserfixture00000001',status:'公開',date,startTime:'19:00',endTime:'20:00',title:'テストイベント',version:1}];
   const daily={date,dayLabel:date,tasks:[{id:'notion:fixture',type:'notion',title:'テストタスク',section:'today',due:date,overdueDays:0}],sources:{}};
   const enc=await encryptForTest({contacts,dailyTasks:daily},'fixture-pass');
@@ -48,7 +48,7 @@ async function main(){
   const executable=['C:/Program Files/Google/Chrome/Application/chrome.exe','C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',chromium.executablePath()].find(p=>fs.existsSync(p));
   if(!executable)throw Error('Chromium executable unavailable');
   const browser=await chromium.launch({headless:true,executablePath:executable});
-  const context=await browser.newContext({viewport:{width:1280,height:900}});await context.addInitScript(()=>localStorage.setItem('comunitylisttolevel9','fixture-token'));const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const context=await browser.newContext({viewport:{width:1280,height:900}});await context.addInitScript(()=>{if(window===window.top)localStorage.setItem('comunitylisttolevel9','fixture-token');});const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await context.route('https://**/*',route=>route.abort());
   async function unlock(){await page.locator('#lockpass').fill('fixture-pass');await page.locator('#lockbtn').click();await page.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');}
   async function loaded(){await page.goto(base+'/comlist.html');await unlock();}
@@ -62,6 +62,8 @@ async function main(){
       await page.setViewportSize({width,height:900});
       await page.locator('.plant').first().click();
       assert.equal(await page.locator('#gdpanel').isVisible(),true);
+      assert.equal(await page.locator('#gdpanel .friend-portrait').textContent(),'人物像人物像のテスト\n原文を表示');
+      assert.equal(await page.locator('#gdpanel .friend-portrait').evaluate(e=>e.nextElementSibling.classList.contains('friend-advice')),true);
       const name=await page.locator('.gd-panel-name').textContent();
       await page.locator('#search').fill(name);
       assert.equal(await page.locator('#gdpanel').isVisible(),false);
@@ -86,7 +88,7 @@ async function main(){
     await page.screenshot({path:path.join(target,'meeting-reminders.png'),fullPage:true});
     await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.meeting-new-badge:not(.today-due-badge)').count(),2);assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth<=innerWidth),true);await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('.meeting-new-badge').first().evaluate(e=>getComputedStyle(e).animationName),'none');await page.screenshot({path:path.join(target,'meeting-reminders-mobile.png'),fullPage:true});await page.emulateMedia({reducedMotion:'no-preference'});await page.setViewportSize({width:1280,height:900});
     const mobileContext=await browser.newContext({viewport:{width:390,height:844}});
-    await mobileContext.addInitScript(()=>localStorage.setItem('comunitylisttolevel9','fixture-token'));
+    await mobileContext.addInitScript(()=>{if(window===window.top)localStorage.setItem('comunitylisttolevel9','fixture-token');});
     await mobileContext.route('https://**/*',route=>route.abort());
     const reminderPhone=await mobileContext.newPage();await reminderPhone.goto(base+'/comlist.html');
     await reminderPhone.locator('#lockpass').fill('fixture-pass');await reminderPhone.locator('#lockbtn').click();
@@ -122,12 +124,26 @@ async function main(){
     offline=false;await page.locator('.gd-add[data-category="B"]').click();await page.locator('#person-name').fill('追加テスト');await page.locator('#person-save').click();await page.waitForFunction(()=>!CREATE_BUSY);assert.equal(await page.locator('.plant').count(),2);
     offline=true;await page.reload();await unlock();await page.locator('[data-view="garden"]').click();assert.equal(await page.locator('.plant').count(),2);
     await page.locator('#search').fill('追加テスト');assert.equal(await page.locator('.plant').count(),1);await page.locator('#search').fill('');await page.evaluate(()=>setView('list'));await page.locator('#sort').selectOption('action');assert.equal(await page.locator('#app .card').count(),2);
-    offline=false;await page.locator('[data-view="events"]').click();await page.waitForFunction(()=>EVENTS_FRESH);page.once('dialog',d=>d.accept());await page.locator('[data-event-delete]').click();await page.waitForFunction(()=>!EVENT_DELETE_BUSY);assert.equal(await page.locator('.ev').count(),0);
-    offline=true;await page.reload();await unlock();await page.locator('[data-view="events"]').click();assert.equal(await page.locator('.ev').count(),0);
+    offline=false;await page.locator('[data-view="calendar"]').click();await page.waitForFunction(()=>EVENTS_FRESH);
+    assert.equal(await page.locator('[data-view="events"]').count(),0);
+    for(const width of [1280,390]){
+      await page.setViewportSize({width,height:900});
+      assert.equal(await page.locator('#events').isVisible(),true);
+      assert.equal(await page.locator('#calwrap').isVisible(),true);
+      const calendar=await page.locator('#calwrap').boundingBox(),events=await page.locator('#events').boundingBox();
+      if(width===1280){assert.ok(events.x>=calendar.x+calendar.width);assert.ok(Math.abs(events.y-calendar.y)<2);}
+      else assert.ok(events.y>=calendar.y+calendar.height);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+      await page.evaluate(()=>window.scrollTo(0,0));
+      await page.screenshot({path:path.join(target,'calendar-events-'+width+'.png')});
+    }
+    await page.setViewportSize({width:1280,height:900});
+    page.once('dialog',d=>d.accept());await page.locator('[data-event-delete]').click();await page.waitForFunction(()=>!EVENT_DELETE_BUSY);assert.equal(await page.locator('.ev').count(),0);
+    offline=true;await page.reload();await unlock();await page.locator('[data-view="calendar"]').click();assert.equal(await page.locator('.ev').count(),0);
     await page.locator('[data-view="today"]').click();assert.equal(await page.locator('[data-view="today"] .today-due-badge').textContent(),'1');assert.equal(await page.locator('.today-task .today-due-badge').count(),1);await page.locator('.today-task-check').check();assert.equal(await page.locator('.today-due-badge').count(),0);await page.reload();await unlock();assert.equal(await page.locator('.today-task-check').isChecked(),true);assert.equal(await page.locator('.today-due-badge').count(),0);await page.locator('.today-task-check').uncheck();assert.equal(await page.locator('[data-view="today"] .today-due-badge').textContent(),'1');await page.reload();await unlock();assert.equal(await page.locator('.today-task-check').isChecked(),false);assert.equal(await page.locator('[data-view="today"] .today-due-badge').textContent(),'1');
     await page.close();const reopened=await context.newPage();await reopened.goto(base+'/comlist.html');await reopened.locator('#lockpass').fill('fixture-pass');await reopened.locator('#lockbtn').click();await reopened.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');assert.equal(await reopened.locator('.today-task-check').isChecked(),false);
     // A real second browser context shares the mock server, never the local storage.
-    offline=false;const second=await browser.newContext({viewport:{width:390,height:844}});await second.route('https://**/*',r=>r.abort());await second.addInitScript(()=>localStorage.setItem('comunitylisttolevel9','fixture-token'));const mobile=await second.newPage();mobile.on('pageerror',e=>errors.push(e.message));
+    offline=false;const second=await browser.newContext({viewport:{width:390,height:844}});await second.route('https://**/*',r=>r.abort());await second.addInitScript(()=>{if(window===window.top)localStorage.setItem('comunitylisttolevel9','fixture-token');});const mobile=await second.newPage();mobile.on('pageerror',e=>errors.push(e.message));
     await mobile.goto(base+'/comlist.html');await mobile.locator('#lockpass').fill('fixture-pass');await mobile.locator('#lockbtn').click();await mobile.waitForFunction(()=>document.getElementById('lockgate').style.display==='none');await mobile.waitForFunction(()=>document.getElementById('contact-sync-status').textContent.includes('最新データを表示'));
     await reopened.locator('[data-view="garden"]').click();await reopened.evaluate(()=>refreshRegisteredPeople());await reopened.locator('.plant').first().click();await reopened.locator('#ge-open').click();await reopened.locator('#ge-nw').fill('競合でも残る入力');
     await mobile.locator('[data-view="garden"]').click();await mobile.locator('.plant').first().click();await mobile.locator('#ge-open').click();await mobile.locator('#ge-nw').fill('別端末の予定');await mobile.locator('#ge-save').click();await mobile.waitForFunction(()=>!PANEL_EDIT);

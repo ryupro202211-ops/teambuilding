@@ -10,7 +10,7 @@ test('each navigation item has a leading decorative icon and still switches view
   assert.equal(doc.body.className,'view-today');
   assert.ok(doc.querySelector('[data-view="today"]').classList.contains('active'));
   assert.equal(doc.querySelector('[data-view="list"]'),null);
-  for(const view of ['today','garden','calendar','events']){
+  for(const view of ['today','garden','calendar']){
     doc.documentElement.scrollTop=300;
     doc.body.scrollTop=300;
     const button=doc.querySelector('[data-view="'+view+'"]');

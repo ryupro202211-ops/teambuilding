@@ -172,7 +172,13 @@ function detailHTML(o,showAdvice){
   }).length;
   var missBadge = missCount ? '<span class="miss-badge">空欄 '+missCount+'</span>' : "";
   return '<details class="det"><summary>詳細を表示'+missBadge+'</summary>'
-    + '<div class="det-body"><div class="fields">'+rows+'</div>'+(showAdvice===false?'':friendAdviceHTML(o))+'</div></details>';
+    + '<div class="det-body"><div class="fields">'+rows+'</div>'+(showAdvice===false?'':friendPortraitHTML(o)+friendAdviceHTML(o))+'</div></details>';
+}
+
+function friendPortraitHTML(o){
+  var portrait=String(o['人物像']||'').trim();
+  if(!portrait)return '';
+  return '<section class="friend-advice friend-portrait" aria-label="人物像"><h3>人物像</h3><div class="friend-advice-text">'+esc(portrait)+'</div></section>';
 }
 
 function friendAdviceHTML(o){
@@ -962,7 +968,7 @@ function renderPanel(){
         + (PANEL_EDIT ? panelEditorHTML(o) : '<button class="gd-editbtn" id="ge-open">✏️ 予定を編集</button>')
         + (PROF_EDIT ? profEditorHTML(o) : '<button class="gd-editbtn" id="pe-open">📝 プロフィールを編集</button>')
         + '</div>' : "")
-    + friendAdviceHTML(o)
+    + friendPortraitHTML(o) + friendAdviceHTML(o)
     + '</div>';
 
   var peO = document.getElementById("pe-open");

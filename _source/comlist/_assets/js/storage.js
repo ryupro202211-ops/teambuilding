@@ -71,8 +71,9 @@ async function initializeSavedState(pass, dataDate) {
     // Never mix a cache from a later daily generation into an older published page.
     if (saved.date !== dataDate) return false;
     // Same-day cache can predate a new read-only advice import. Keep cached edits, refresh only that source field.
-    var publishedAdvice=new Map(DATA.filter(function(o){return typeof o['仲間づくりアドバイス']==='string';}).map(function(o){return [o._row,o];}));
-    var restoredContacts=saved.contacts.map(function(o){var source=publishedAdvice.get(o._row);return source&&source['名前(あだ名)']===o['名前(あだ名)']?Object.assign({},o,{'仲間づくりアドバイス':source['仲間づくりアドバイス']}):o;});
+    var readOnlyFields=['仲間づくりアドバイス','人物像'];
+    var publishedAdvice=new Map(DATA.filter(function(o){return readOnlyFields.some(function(key){return typeof o[key]==='string';});}).map(function(o){return [o._row,o];}));
+    var restoredContacts=saved.contacts.map(function(o){var source=publishedAdvice.get(o._row);if(!source||source['名前(あだ名)']!==o['名前(あだ名)'])return o;var restored=Object.assign({},o);readOnlyFields.forEach(function(key){if(typeof source[key]==='string')restored[key]=source[key];});return restored;});
     DATA.splice(0,DATA.length,...restoredContacts);
     EVENTS.splice(0,EVENTS.length,...events);
     CONTACT_ACTION_PENDING = saved.contactAction || null;
