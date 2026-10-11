@@ -74,6 +74,15 @@ async function main(){
       assert.ok(gap>=0&&gap<=25,'search results gap: '+gap+' at width '+width);
       assert.equal(await page.locator('[data-view=garden] .meeting-new-badge').textContent(),'1');
       assert.ok(await page.locator('.plant').count()>0);
+      if(width===1280){
+        await page.locator('.plant').first().hover();
+        const preview=page.locator('#garden-friend-preview');await preview.waitFor({state:'visible'});
+        assert.equal(await preview.locator('p').nth(1).textContent(),'人物像のテスト\n原文を表示');
+        assert.equal(await preview.locator('p').first().textContent(),'未記入');
+        const box=await preview.boundingBox();assert.ok(box.x>=0&&box.x+box.width<=width&&box.y>=0&&box.y+box.height<=900);
+        await preview.hover();assert.equal(await preview.isVisible(),true);
+        await page.keyboard.press('Escape');assert.equal(await preview.isVisible(),false);
+      }
       await page.locator('.plant').first().click();
       assert.equal(await page.locator('#gdpanel').isVisible(),true);
       await page.locator('#search').fill('no-matching-friend');
@@ -126,12 +135,12 @@ async function main(){
     await page.locator('#search').fill('追加テスト');assert.equal(await page.locator('.plant').count(),1);await page.locator('#search').fill('');await page.evaluate(()=>setView('list'));await page.locator('#sort').selectOption('action');assert.equal(await page.locator('#app .card').count(),2);
     offline=false;await page.locator('[data-view="calendar"]').click();await page.waitForFunction(()=>EVENTS_FRESH);
     assert.equal(await page.locator('[data-view="events"]').count(),0);
-    for(const width of [1280,390]){
+    for(const width of [1920,1280,390]){
       await page.setViewportSize({width,height:900});
       assert.equal(await page.locator('#events').isVisible(),true);
       assert.equal(await page.locator('#calwrap').isVisible(),true);
       const calendar=await page.locator('#calwrap').boundingBox(),events=await page.locator('#events').boundingBox();
-      if(width===1280){assert.ok(events.x>=calendar.x+calendar.width);assert.ok(Math.abs(events.y-calendar.y)<2);}
+      if(width>1100){assert.ok(events.x>=calendar.x+calendar.width);assert.ok(Math.abs(events.y-calendar.y)<2);assert.equal(Math.round((await page.locator('body').boundingBox()).width),width);}
       else assert.ok(events.y>=calendar.y+calendar.height);
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
       await page.evaluate(()=>window.scrollTo(0,0));

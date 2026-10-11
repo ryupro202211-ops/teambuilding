@@ -612,6 +612,44 @@ function gardenList(){
   return DATA.filter(function(o){ return cats[o["カテゴリー"]] && matchSearch(o); });
 }
 
+var GARDEN_FRIEND_PREVIEW = null;
+function bindGardenFriendPreviews(){
+  if(!GARDEN_FRIEND_PREVIEW){
+    var popup=document.createElement('div');
+    popup.id='garden-friend-preview';popup.className='garden-friend-preview';
+    popup.setAttribute('role','tooltip');popup.hidden=true;document.body.appendChild(popup);
+    var state={popup:popup,anchor:null,timer:null};GARDEN_FRIEND_PREVIEW=state;
+    state.hide=function(){clearTimeout(state.timer);if(state.anchor)state.anchor.removeAttribute('aria-describedby');state.anchor=null;popup.hidden=true;};
+    state.defer=function(){clearTimeout(state.timer);state.timer=setTimeout(state.hide,150);};
+    popup.addEventListener('pointerenter',function(){clearTimeout(state.timer);});
+    popup.addEventListener('pointerleave',state.defer);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')state.hide();});
+    window.addEventListener('resize',state.hide);
+    window.addEventListener('scroll',function(e){if(!popup.contains(e.target))state.hide();},true);
+  }
+  var state=GARDEN_FRIEND_PREVIEW;state.hide();
+  document.querySelectorAll('#garden .plant').forEach(function(button){
+    function show(){
+      var person=DATA.find(function(o){return plantKey(o)===button.getAttribute('data-k');});
+      if(!person)return;
+      state.hide();state.anchor=button;
+      state.popup.innerHTML='<strong>'+esc(person['名前(あだ名)']||'(名前なし)')+'</strong>'
+        +'<div><b>出会った場所</b><p>'+esc(String(person['出会い(どこで)']||'').trim()||'未記入')+'</p></div>'
+        +'<div><b>人物像</b><p>'+esc(String(person['人物像']||'').trim()||'未記入')+'</p></div>';
+      state.popup.hidden=false;button.setAttribute('aria-describedby',state.popup.id);
+      var rect=button.getBoundingClientRect(),box=state.popup.getBoundingClientRect(),gap=8;
+      state.popup.style.left=Math.max(gap,Math.min(rect.left,innerWidth-box.width-gap))+'px';
+      var top=rect.bottom+gap;
+      if(top+box.height>innerHeight-gap)top=rect.top-box.height-gap;
+      state.popup.style.top=Math.max(gap,Math.min(top,innerHeight-box.height-gap))+'px';
+    }
+    button.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')show();});
+    button.addEventListener('pointerleave',state.defer);
+    button.addEventListener('focus',function(){if(button.matches(':focus-visible'))show();});
+    button.addEventListener('blur',state.hide);
+    button.addEventListener('click',state.hide);
+  });
+}
 function renderGarden(){
   var gardenWrap = document.getElementById('gardenwrap');
   var anchor = SEARCH ? document.querySelector('.toolbar').nextElementSibling : document.getElementById('listwrap');
@@ -685,7 +723,7 @@ function renderGarden(){
     return '<button class="plant ' + x.s.st + (SELECTED===k ? ' sel' : '')
       + (BULK_MODE && BULK_PICKED[k] ? ' picked' : '') + '" data-k="' + esc(k) + '" '
       + 'style="background: rgba(255,252,242,' + lum.toFixed(2) + ')" '
-      + 'title="' + esc((x.o["名前(あだ名)"]||"") + " / " + x.s.label + " / 充実度 " + x.n.pct + "%") + '">'
+      + 'aria-label="' + esc((x.o["名前(あだ名)"]||"") + " / " + x.s.label + " / 充実度 " + x.n.pct + "%") + '">'
       + (x.s.thirsty ? '<span class="plant-drop">💧</span>' : "")
       + '<span class="plant-emoji">' + plantEmoji(x.s) + '</span>'
       + '<span class="plant-name">' + esc(x.o["名前(あだ名)"]||"(名前なし)") + '</span>'
@@ -728,6 +766,7 @@ function renderGarden(){
   }).join("");
   document.getElementById("garden").innerHTML =
     groups || '<div class="gd-none">該当する株がありません</div>';
+  bindGardenFriendPreviews();
   document.querySelectorAll(".gd-add").forEach(function(el){el.addEventListener("click",function(){openCreatePerson(this.dataset.category);});});
   document.querySelectorAll(".bulk-gcat").forEach(function(el){
     el.addEventListener("change", function(){

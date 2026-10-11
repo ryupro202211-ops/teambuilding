@@ -977,6 +977,12 @@ dialog::backdrop{background:#132b4266;backdrop-filter:blur(3px)}
 
 /* Shared calendar and event workspace. */
 #calendar-events { display:none; }
+.garden-friend-preview { position:fixed; z-index:1000; width:360px; max-width:calc(100vw - 16px); max-height:calc(100vh - 16px); overflow:auto; padding:16px; border:1px solid #c8d9b8; border-radius:12px; background:#fffff8; color:#28364b; box-shadow:0 8px 28px #20352230; font-size:13px; }
+.garden-friend-preview[hidden], body:not(.view-garden) .garden-friend-preview { display:none; }
+.garden-friend-preview > strong { display:block; font-size:15px; margin-bottom:10px; }
+.garden-friend-preview > div + div { margin-top:12px; }
+.garden-friend-preview b { color:#477342; }
+.garden-friend-preview p { margin-top:4px; white-space:pre-wrap; overflow-wrap:anywhere; }
 body.view-calendar #calendar-events { display:grid; grid-template-columns:minmax(0,2fr) minmax(280px,1fr); gap:20px; align-items:start; }
 body.view-calendar #calendar-events > #calwrap, body.view-calendar #calendar-events > #events { display:block; min-width:0; }
 #calendar-events #slots { margin-top:0; }
@@ -984,4 +990,5 @@ body.view-calendar #calendar-events > #calwrap, body.view-calendar #calendar-eve
 #calendar-events .events-head { flex-wrap:wrap; gap:8px; }
 #calendar-events .events-title { flex:1; white-space:nowrap; }
 #calendar-events .events-add { flex-basis:100%; margin-left:0; white-space:nowrap; }
+@media(min-width:1101px) { body { max-width:none; } }
 @media(max-width:1100px) { body.view-calendar #calendar-events { grid-template-columns:minmax(0,1fr); } }
