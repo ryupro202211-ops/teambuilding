@@ -19,7 +19,7 @@ test('daily vision source keeps the approved image at its intrinsic aspect ratio
   assert.match(imageTag, new RegExp(`\\bheight="${imageHeight}"`));
   assert.equal(
     crypto.createHash('sha256').update(image).digest('hex'),
-    '02396ab43f35271186a99931ab018950f34b592e79bc5261c84ca22f21d6c9b6'
+    '5db0d724571619acebe948b44200d52f8755b581dbb44885bd4eb7c8f11f416c'
   );
 
   const css = fs.readFileSync('_assets/css/comlist.css', 'utf8');
